@@ -2,29 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kota Selat: Syahbandar 1500 AD</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta property="og:title" content="Kota Selat: Syahbandar 1500 AD" />
+  <meta property="og:description" content="A maritime city-building and deck-drafting roguelite set in 1500s Malacca." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚓</text></svg>">
   <style>
-    /* ==========================================================================
-       DESIGN TOKENS & SYSTEM BASELINE (ZERO DEPENDENCIES)
-       ========================================================================== */
     :root {
-      --bg-ocean: #030811;
-      --bg-surface: #0a131f;
-      --bg-card: #0e1b2b;
-      --border-subtle: #1a2c42;
-      --border-gold: #c59b27;
-      --gold-bright: #fbbf24;
-      --gold-dark: #92661e;
-      --emerald-accent: #10b981;
-      --sky-defense: #38bdf8;
-      --crimson-threat: #ef4444;
-      --legendary-gold: #f59e0b;
-      --text-main: #f8fafc;
+      --bg-dark: #0b1118;
+      --panel-bg: rgba(18, 26, 36, 0.95);
+      --panel-border: #2a3b4f;
+      --gold-primary: #e5b342;
+      --gold-hover: #f3ca65;
+      --text-main: #f1f5f9;
       --text-muted: #94a3b8;
-      --text-dim: #64748b;
-      --font-serif: "Times New Roman", Times, "Georgia", serif;
-      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --sea-deep: #0f2c42;
+      --sea-mid: #154563;
+      --sand-gold: #c29b38;
+      --sand-soft: #8a6d25;
+      --land-lush: #1a422a;
+      --land-deep: #12301e;
+      --danger: #ef4444;
+      --success: #10b981;
+      --night-tint: rgba(6, 12, 24, 0.7);
     }
 
     * {
@@ -32,2768 +32,1990 @@
       margin: 0;
       padding: 0;
       user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
     }
 
     body {
-      background-color: var(--bg-ocean);
+      background-color: var(--bg-dark);
       color: var(--text-main);
-      font-family: var(--font-sans);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      padding: 10px 14px;
       overflow-x: hidden;
-      background-image: 
-        radial-gradient(ellipse at 15% 20%, rgba(14, 116, 144, 0.2) 0%, transparent 60%),
-        radial-gradient(ellipse at 85% 80%, rgba(30, 41, 59, 0.4) 0%, transparent 60%);
+      position: relative;
     }
 
-    /* ==========================================================================
-       1. STACKED TOP HUD
-       ========================================================================== */
-    header.hud-bar {
-      width: 100%;
-      max-width: 1240px;
-      background: linear-gradient(180deg, #132030 0%, #0a1320 100%);
-      border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: 8px 14px 10px 14px;
+    /* Ambient Night Overlay */
+    #night-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 50% 20%, rgba(15, 30, 60, 0.5), rgba(4, 8, 16, 0.85));
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1.2s ease-in-out;
+      z-index: 40;
+    }
+    body.is-night #night-overlay {
+      opacity: 1;
+    }
+
+    /* Top HUD */
+    header.hud-header {
+      background: rgba(14, 22, 33, 0.98);
+      border-bottom: 1px solid var(--panel-border);
+      padding: 8px 16px;
       display: flex;
       flex-direction: column;
-      gap: 7px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(197, 155, 39, 0.25);
+      gap: 6px;
+      z-index: 50;
+      position: sticky;
+      top: 0;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.4);
     }
 
-    /* Row 1: Brand title & Navigation */
-    .hud-row-top {
+    .hud-top-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      padding-bottom: 4px;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .brand-group {
-      display: flex;
-      align-items: baseline;
-      gap: 12px;
-    }
+
     .brand-title {
-      font-family: var(--font-serif);
-      font-size: 19px;
-      font-weight: 800;
-      letter-spacing: 2px;
-      color: var(--gold-bright);
-      text-transform: uppercase;
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .brand-title .emblem {
-      color: var(--border-gold);
-      font-size: 20px;
-      filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.4));
-    }
-    .brand-subtitle {
-      font-size: 10px;
-      text-transform: uppercase;
+    .brand-title h1 {
+      font-size: 1.15rem;
       letter-spacing: 1.5px;
+      color: var(--gold-primary);
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+    .brand-title .subtitle {
+      font-size: 0.72rem;
       color: var(--text-muted);
-      font-weight: 600;
+      border-left: 1px solid var(--panel-border);
+      padding-left: 8px;
     }
 
-    /* Row 2: Fixed-width metrics & Right-aligned Controls */
-    .hud-row-bottom {
+    .hud-nav-btns {
+      display: flex;
+      gap: 6px;
+    }
+    .btn-nav {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--panel-border);
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .btn-nav:hover {
+      color: var(--text-main);
+      border-color: var(--gold-primary);
+    }
+
+    /* HUD Stats & Dial Row */
+    .hud-stats-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
-      flex-wrap: nowrap;
-    }
-    .hud-metrics {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: nowrap;
-      overflow: hidden;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
-    .hud-pill {
-      background: rgba(5, 11, 18, 0.94);
-      border: 1px solid var(--border-subtle);
-      border-radius: 6px;
+    .stats-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .stat-pill {
+      background: rgba(22, 34, 48, 0.9);
+      border: 1px solid var(--panel-border);
       padding: 4px 8px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       gap: 6px;
+      font-size: 0.75rem;
+      min-height: 32px;
       white-space: nowrap;
-      flex-shrink: 0;
     }
-    .hud-pill .icon { font-size: 14px; }
-    .hud-pill .label {
-      font-size: 7.5px;
+    .stat-pill .label {
+      color: var(--text-muted);
+      font-size: 0.65rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      color: var(--text-dim);
+    }
+    .stat-pill .val {
       font-weight: 700;
-      display: block;
-      line-height: 1;
+      color: #fff;
     }
-    .hud-pill .val {
-      font-weight: 700;
-      font-size: 11px;
-      line-height: 1.2;
-    }
-    .pill-gold .val { color: var(--gold-bright); }
-    .pill-rep .val { color: var(--emerald-accent); }
-    .pill-hp .val { color: var(--crimson-threat); }
-    .pill-def .val { color: var(--sky-defense); }
-    .pill-pop .val { color: #cbd5e1; }
-    .pill-storage .val { color: #fdba74; }
-    .pill-storage.warning .val { color: var(--crimson-threat); font-weight: 800; }
+    .val-gold { color: var(--gold-primary); }
+    .val-threat { color: #f87171; }
+    .val-safe { color: var(--success); }
+    .val-rep { color: #38bdf8; }
 
-    /* Fixed-width defense pill with boss abbreviation protection */
-    .pill-def {
-      max-width: 195px;
-    }
-    .pill-def .val {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      display: inline-block;
-      max-width: 150px;
-    }
-
-    /* Controls Pinned to Far Right */
+    /* Action Controls & Astrolabe Dial */
     .hud-controls-right {
       display: flex;
       align-items: center;
+      gap: 10px;
+    }
+
+    /* Celestial Astrolabe Dial */
+    .dial-container {
+      display: flex;
+      align-items: center;
       gap: 8px;
-      flex-shrink: 0;
+      background: rgba(18, 27, 39, 0.95);
+      border: 1px solid var(--gold-primary);
+      padding: 3px 8px;
+      border-radius: 20px;
+      box-shadow: 0 0 10px rgba(229, 179, 66, 0.15);
     }
-    .season-counter { text-align: right; }
-    .season-label {
-      font-size: 7.5px;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .season-num {
-      font-family: var(--font-serif);
-      font-size: 12.5px;
-      font-weight: 700;
-      color: var(--border-gold);
-      white-space: nowrap;
-    }
-    .btn-action-horn {
-      background: linear-gradient(180deg, #b91c1c 0%, #7f1d1d 100%);
-      color: #fff;
-      border: 1px solid #ef4444;
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 10.5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      cursor: pointer;
+    .astrolabe {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--gold-primary);
+      position: relative;
+      background: #0f172a;
+      overflow: hidden;
       display: flex;
       align-items: center;
-      gap: 5px;
-      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
-      transition: all 0.2s ease;
-      white-space: nowrap;
+      justify-content: center;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.8);
     }
-    .btn-action-horn:hover {
-      background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%);
-      transform: translateY(-1px);
-    }
-    .btn-action-pause {
-      background: #152230;
-      color: var(--text-main);
-      border: 1px solid #273b50;
-      border-radius: 6px;
-      padding: 6px 11px;
-      font-size: 10.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-    .btn-action-pause:hover {
-      border-color: var(--border-gold);
-      background: #1b2e42;
-    }
-
-    /* ==========================================================================
-       2. MAIN VIEWPORT (5x5 GRID & BALAI SYAHBANDAR)
-       ========================================================================== */
-    main.viewport {
+    .astrolabe-inner {
       width: 100%;
-      max-width: 1240px;
-      margin: 8px 0;
-      display: grid;
-      grid-template-columns: 480px 1fr;
-      gap: 14px;
-      align-items: stretch;
+      height: 100%;
+      position: absolute;
+      transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
-    /* -------------------------------------------------------------
-       SEAMLESS 5x5 BOARD (GAP: 0)
-    -------------------------------------------------------------- */
-    .board-container {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    .sun-icon {
+      position: absolute;
+      top: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+    }
+    .moon-icon {
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+    }
+    .dial-hand {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 2px;
+      height: 12px;
+      background: #f43f5e;
+      transform-origin: bottom center;
+      transform: translate(-50%, -100%) rotate(0deg);
+      border-radius: 2px;
+      box-shadow: 0 0 4px #f43f5e;
+      transition: transform 0.8s linear;
+    }
+    .dial-center-pin {
+      width: 5px;
+      height: 5px;
+      background: var(--gold-primary);
+      border-radius: 50%;
+      z-index: 2;
+    }
+    .dial-meta {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      gap: 8px;
-      height: 520px;
+    }
+    .dial-season {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--gold-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .dial-phase-text {
+      font-size: 0.62rem;
+      color: var(--text-muted);
     }
 
-    .board-header {
+    /* Open Harbor Main Action Button */
+    .btn-open-harbor {
+      background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+      border: 1px solid #f87171;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(185, 28, 28, 0.4);
+      transition: all 0.2s;
+    }
+    .btn-open-harbor:hover {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.6);
+    }
+    .btn-open-harbor:active {
+      transform: translateY(0);
+    }
+
+    .btn-pause {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid var(--panel-border);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-pause:hover {
+      color: #fff;
+      border-color: var(--gold-primary);
+    }
+
+    /* Main Game Layout */
+    main.game-container {
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      gap: 16px;
+      max-width: 1400px;
+      margin: 12px auto;
+      padding: 0 16px;
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Left Column: 5x5 Map Canvas */
+    .grid-section {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 2px;
-    }
-    .board-header .legend {
-      display: flex;
-      gap: 9px;
-      font-size: 9px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--gold-primary);
+      letter-spacing: 0.5px;
       text-transform: uppercase;
-      letter-spacing: 0.6px;
+    }
+    .legend-indicators {
+      display: flex;
+      gap: 10px;
+      font-size: 0.65rem;
       color: var(--text-muted);
     }
-    .legend-item { display: flex; align-items: center; gap: 4px; }
-    .dot { width: 7px; height: 7px; border-radius: 2px; }
-    .dot-sea { background: #0284c7; }
-    .dot-coast { background: #d97706; }
-    .dot-inland { background: #15803d; }
-    .dot-royal { background: #eab308; }
+    .legend-tag {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .dot-sea { width: 8px; height: 8px; background: var(--sea-mid); border-radius: 2px; }
+    .dot-coast { width: 8px; height: 8px; background: var(--sand-gold); border-radius: 2px; }
+    .dot-land { width: 8px; height: 8px; background: var(--land-lush); border-radius: 2px; }
 
-    .grid-matrix-seamless {
+    /* 5x5 Board with gap:0 */
+    .board-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       grid-template-rows: repeat(5, 1fr);
-      aspect-ratio: 1 / 1;
-      width: 100%;
       gap: 0;
-      background: #02060b;
-      border-radius: 8px;
-      border: 2px solid #22374d;
-      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border: 2px solid #334155;
+      border-radius: 6px;
       overflow: hidden;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8);
+      position: relative;
     }
 
-    .tile-cell {
+    .tile {
       position: relative;
+      cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      transition: background-color 0.15s ease;
-      overflow: hidden;
+      transition: filter 0.2s;
+      border: 0.5px solid rgba(255,255,255,0.06);
     }
-
-    .tile-cell::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-right: 1px dashed rgba(255, 255, 255, 0.05);
-      border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
-      pointer-events: none;
-      z-index: 2;
+    .tile:hover {
+      filter: brightness(1.2);
     }
-
-    /* Terrain Biomes */
-    .tile-cell.biome-sea {
-      background: linear-gradient(90deg, #020c15 0%, #051a27 70%, #092c40 100%);
-      box-shadow: inset 0 0 16px rgba(2, 132, 199, 0.15);
-    }
-    .tile-cell.biome-sea::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 2px, transparent 2px, transparent 8px);
-      pointer-events: none;
-    }
-
-    .tile-cell.biome-port {
-      background: 
-        repeating-linear-gradient(0deg, rgba(120, 80, 45, 0.4) 0px, rgba(120, 80, 45, 0.4) 3px, transparent 3px, transparent 7px),
-        linear-gradient(90deg, #092131 0%, #3e2614 75%, #5a391e 100%);
-      border-right: 3px solid var(--gold-bright);
-      z-index: 3;
-    }
-    .tile-cell.biome-port .port-emblem {
-      font-size: 26px;
-      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.9));
-      z-index: 4;
-      animation: portBob 3s ease-in-out infinite;
-    }
-    .tile-cell.biome-port.port-south {
-      border-right: 3px solid #f59e0b;
-      box-shadow: inset 0 0 12px rgba(245, 158, 11, 0.4);
-    }
-    @keyframes portBob {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-2px); }
-    }
-
-    .tile-cell.biome-coast {
-      background: 
-        radial-gradient(ellipse at 100% 50%, #1e4523 0%, transparent 70%),
-        linear-gradient(90deg, #c49f59 0%, #a4813f 30%, #335928 100%);
-    }
-
-    .tile-cell.biome-inland {
-      background: radial-gradient(circle at 50% 50%, #1f4522 0%, #143118 100%);
-    }
-    .tile-cell.biome-inland:nth-child(even) {
-      background: radial-gradient(circle at 50% 50%, #1b3f1e 0%, #102913 100%);
-    }
-
-    /* Royal District: Balai Penghulu & Istana Melaka at [2, 2] */
-    .tile-cell.royal-district {
-      background: radial-gradient(circle at 50% 50%, #3a2204 0%, #171003 100%);
-      border: 1px solid var(--border-gold);
-    }
-    .tile-cell.royal-district.istana-active {
-      background: radial-gradient(circle at 50% 50%, #4a2800 0%, #291500 100%);
-      border: 2px solid var(--gold-bright);
-      box-shadow: inset 0 0 16px rgba(251, 191, 36, 0.4), 0 0 10px rgba(251, 191, 36, 0.3);
-    }
-
-    /* Submerged Tile (Monsoon Catastrophe) */
-    .tile-cell.submerged {
-      background: linear-gradient(135deg, #032b43 0%, #0c4a6e 100%) !important;
-      border: 2px dashed #38bdf8 !important;
-      animation: waterRipples 2s infinite ease-in-out;
-    }
-    @keyframes waterRipples {
-      0%, 100% { opacity: 0.8; }
-      50% { opacity: 1; }
-    }
-
-    /* Valid Target Highlights */
-    .tile-cell.valid-placement::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: rgba(16, 185, 129, 0.22) !important;
-      border: 2px dashed #34d399 !important;
-      animation: pulseValid 1.4s infinite ease-in-out;
-      z-index: 6;
-      pointer-events: none;
-    }
-    @keyframes pulseValid {
-      0%, 100% { opacity: 0.6; }
-      50% { opacity: 0.95; }
-    }
-
-    /* Brass Corner Bracket Reticle */
-    .tile-cell:hover, .tile-cell.selected {
+    .tile.selected-target {
+      outline: 2px solid var(--gold-primary);
       z-index: 10;
     }
-    .tile-cell:hover::before, .tile-cell.selected::before {
-      border: 1px solid var(--gold-bright);
-      background: rgba(251, 191, 36, 0.12);
-      box-shadow: inset 0 0 10px rgba(251, 191, 36, 0.35);
-      z-index: 5;
+
+    /* Biomes */
+    .tile-sea {
+      background: linear-gradient(135deg, var(--sea-deep) 0%, var(--sea-mid) 100%);
+    }
+    .tile-coast {
+      background: linear-gradient(135deg, var(--sand-gold) 0%, var(--sand-soft) 100%);
+    }
+    .tile-land {
+      background: linear-gradient(135deg, var(--land-lush) 0%, var(--land-deep) 100%);
+    }
+    .tile.flooded {
+      background: linear-gradient(135deg, #1e3a5f 0%, #0c4a6e 100%) !important;
+      position: relative;
+    }
+    .tile.flooded::after {
+      content: "🌊 FLOODED";
+      position: absolute;
+      font-size: 0.55rem;
+      font-weight: 800;
+      color: #7dd3fc;
+      background: rgba(12, 74, 110, 0.8);
+      padding: 2px 4px;
+      border-radius: 3px;
     }
 
+    /* Placed Structure Tokens */
     .tile-coord {
       position: absolute;
       top: 3px;
-      left: 4px;
-      font-size: 8px;
-      font-family: monospace;
-      color: rgba(255, 255, 255, 0.35);
-      z-index: 4;
+      left: 3px;
+      font-size: 0.55rem;
+      color: rgba(255,255,255,0.4);
       pointer-events: none;
     }
-
-    /* Building Token On-Tile */
-    .building-token {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 5;
-      pointer-events: none;
-      padding: 2px;
-    }
-    .building-token .b-icon {
-      font-size: 26px;
-      line-height: 1;
-      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.95));
-      animation: popIn 0.2s ease-out;
-    }
-    @keyframes popIn {
-      0% { transform: scale(0.6); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    .building-token .b-name {
-      font-size: 8px;
-      font-weight: 800;
-      color: #fff;
-      text-shadow: 0 1px 4px #000, 0 2px 6px #000;
-      text-align: center;
-      line-height: 1.1;
-      margin-top: 2px;
-      max-width: 90%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .tile-stars {
-      font-size: 9px;
-      color: var(--gold-bright);
-      font-weight: 900;
-      letter-spacing: -1px;
-      margin-top: 1px;
-      text-shadow: 0 0 5px rgba(251, 191, 36, 0.8);
-    }
-
-    /* Durability Badges (Clean, Non-Chipped Pill) */
-    .tile-badge-life {
+    .tile-durability-pill {
       position: absolute;
       top: 3px;
       right: 3px;
-      background: rgba(14, 23, 38, 0.95);
-      border: 1px solid var(--sky-defense);
-      color: #7dd3fc;
-      border-radius: 4px;
-      padding: 1px 4px;
-      font-size: 8px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 10px;
+      font-size: 0.55rem;
       font-weight: 800;
-      line-height: 1;
+      padding: 1px 5px;
+      color: #fbbf24;
       z-index: 12;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.8);
       pointer-events: none;
     }
-    .tile-badge-life.merc {
-      border-color: var(--crimson-threat);
-      color: #fca5a5;
+    .tile-icon {
+      font-size: 1.55rem;
+      margin-bottom: 2px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+    }
+    .tile-name {
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      line-height: 1.1;
+      padding: 0 2px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+    .tile-stars {
+      font-size: 0.62rem;
+      color: #fbbf24;
+      letter-spacing: 1px;
     }
 
-    /* -------------------------------------------------------------
-       BALAI SYAHBANDAR & THREAT CENTER (PANELS 4 & 5)
-       -------------------------------------------------------------- */
-    .command-center {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 12px;
-      height: 520px;
+    /* Right Column: Intel & Horizon */
+    .intel-section {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      gap: 10px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      gap: 12px;
     }
 
-    .panel-header-title {
-      font-family: var(--font-serif);
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--gold-bright);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      border-bottom: 1px solid var(--border-subtle);
-      padding-bottom: 6px;
-    }
-
-    /* Middle Intel Row: Panel 4 (Left) & Panel 5 (Right) */
-    .middle-intel-row {
+    .panels-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 12px;
     }
 
-    /* PANEL 4: DETAILED INSPECTOR */
-    .inspector-card {
-      background: #071018;
-      border: 1px solid #182837;
+    /* Left Panel: Inspector */
+    .panel-box {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
       border-radius: 8px;
-      padding: 10px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      height: 185px;
-      overflow-y: auto;
+      gap: 8px;
+      min-height: 200px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     }
-    .inspector-card::-webkit-scrollbar { width: 4px; }
-    .inspector-card::-webkit-scrollbar-thumb { background: #1b2f42; border-radius: 2px; }
-
-    .inspector-head {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .inspector-icon {
-      width: 36px;
-      height: 36px;
-      background: #0e1b29;
-      border: 1px solid var(--border-subtle);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-    .inspector-titles h4 {
-      font-size: 12px;
-      color: var(--border-gold);
-      letter-spacing: 0.3px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 180px;
-    }
-    .inspector-titles span {
-      font-size: 8px;
-      color: var(--text-muted);
+    .panel-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--gold-primary);
+      letter-spacing: 0.5px;
       text-transform: uppercase;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 4px;
     }
-    .inspector-desc {
-      font-size: 10px;
-      color: var(--text-main);
-      line-height: 1.35;
-      margin: 4px 0;
-    }
-    .inspector-meta {
+    .inspector-content {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      line-height: 1.4;
       display: flex;
-      gap: 4px;
-      font-size: 8.5px;
-      flex-wrap: wrap;
-      margin-bottom: 4px;
+      flex-direction: column;
+      gap: 6px;
     }
-    .meta-badge {
-      background: #111f2e;
-      border: 1px solid #1c3247;
-      border-radius: 4px;
+    .inspector-badge-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .badge-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
       padding: 2px 6px;
-      color: var(--text-muted);
-      font-weight: 600;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--panel-border);
     }
-    .meta-badge.workforce {
-      border-color: #38bdf8;
-      color: #7dd3fc;
-      background: rgba(56, 189, 248, 0.15);
-      font-weight: 700;
-    }
-    .meta-badge.workforce-gen {
-      border-color: #10b981;
-      color: #6ee7b7;
-      background: rgba(16, 185, 129, 0.15);
-      font-weight: 700;
-    }
-    .meta-badge.warning {
-      border-color: #ef4444;
-      color: #fca5a5;
-      background: rgba(239, 68, 68, 0.18);
-    }
-    .meta-badge.royal {
-      border-color: var(--gold-bright);
-      color: var(--gold-bright);
-      background: rgba(251, 191, 36, 0.18);
-      font-weight: 800;
-    }
+    .badge-labor-needed { background: rgba(239, 68, 68, 0.2); border-color: #ef4444; color: #fca5a5; }
+    .badge-labor-ok { background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #a7f3d0; }
 
-    /* Actions in Inspector */
     .inspector-actions {
+      margin-top: auto;
       display: flex;
-      gap: 5px;
-      margin-top: 4px;
+      gap: 6px;
       flex-wrap: wrap;
     }
-    .btn-insp-action {
-      background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
-      color: #fff;
-      border: 1px solid #60a5fa;
-      border-radius: 4px;
-      padding: 4px 8px;
-      font-size: 8.5px;
+    .btn-inspector-action {
+      font-size: 0.7rem;
       font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--gold-primary);
+      background: rgba(229, 179, 66, 0.15);
+      color: var(--gold-primary);
       cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      transition: all 0.2s ease;
+      transition: all 0.2s;
     }
-    .btn-insp-action:hover:not(:disabled) {
-      background: #1e40af;
-      transform: translateY(-1px);
+    .btn-inspector-action:hover {
+      background: var(--gold-primary);
+      color: #0b1118;
     }
-    .btn-insp-action:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-      border-color: #475569;
-      background: #1e293b;
+    .btn-demolish {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
     }
-    .btn-insp-istana {
-      background: linear-gradient(180deg, #d97706 0%, #b45309 100%);
-      border-color: #fbbf24;
+    .btn-demolish:hover {
+      background: #ef4444;
       color: #fff;
-    }
-    .btn-insp-istana:hover:not(:disabled) {
-      background: #92400e;
-    }
-    .btn-insp-demolish {
-      background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%);
-      border-color: #f87171;
-      color: #fff;
-    }
-    .btn-insp-demolish:hover:not(:disabled) {
-      background: #7f1d1d;
     }
 
-    /* PANEL 5: ANIMATED MARITIME HORIZON */
-    .horizon-card {
-      background: #071018;
-      border: 1px solid #182837;
+    /* Right Panel: Animated Horizon */
+    .horizon-box {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
       border-radius: 8px;
       padding: 10px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      height: 185px;
+      gap: 8px;
+      position: relative;
       overflow: hidden;
-      position: relative;
     }
-    .horizon-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 9px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      z-index: 2;
-    }
-    .horizon-live-tag {
-      color: #38bdf8;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .horizon-live-dot {
-      width: 6px;
-      height: 6px;
-      background: #38bdf8;
-      border-radius: 50%;
-      animation: pulseLive 1.5s infinite;
-    }
-    @keyframes pulseLive {
-      0%, 100% { opacity: 0.4; }
-      50% { opacity: 1; }
-    }
-
-    .horizon-stage {
-      position: relative;
-      height: 75px;
+    .horizon-canvas-wrapper {
       width: 100%;
-      background: linear-gradient(180deg, #071825 0%, #0c2336 60%, #071927 100%);
-      border-radius: 5px;
-      border: 1px solid #142d42;
+      height: 90px;
+      background: linear-gradient(180deg, #09131e 0%, #132d46 60%, #0d2134 100%);
+      border-radius: 6px;
+      position: relative;
       overflow: hidden;
-      margin: 4px 0;
+      border: 1px solid #1e293b;
     }
-    .horizon-sun {
+    .horizon-celestial {
       position: absolute;
-      top: 6px;
-      right: 18px;
-      width: 18px;
-      height: 18px;
-      background: radial-gradient(circle, #fde047 30%, #ca8a04 100%);
+      top: 10px;
+      right: 20px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
-      box-shadow: 0 0 10px #fde047;
-      opacity: 0.85;
+      background: #fbbf24;
+      box-shadow: 0 0 14px #fbbf24;
+      transition: all 1.2s;
     }
-    .horizon-waves {
+    body.is-night .horizon-celestial {
+      background: #e2e8f0;
+      box-shadow: 0 0 10px #cbd5e1;
+      right: 80%;
+    }
+    .horizon-wave {
       position: absolute;
       bottom: 0;
       left: 0;
       width: 200%;
-      height: 24px;
-      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 60' preserveAspectRatio='none'%3E%3Cpath d='M0,20 C150,45 350,-10 500,20 C650,45 750,0 800,20 L800,60 L0,60 Z' fill='%23083344' fill-opacity='0.7'/%3E%3Cpath d='M0,30 C200,5 300,45 500,25 C700,5 750,35 800,30 L800,60 L0,60 Z' fill='%230284c7' fill-opacity='0.5'/%3E%3C/svg%3E") repeat-x;
-      animation: waveDrift 8s linear infinite;
+      height: 28px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0 C150,90 350,-40 500,50 C650,140 900,-20 1200,40 L1200,120 L0,120 Z" fill="%230f2c42"/></svg>');
+      background-size: 600px 28px;
+      animation: waveMove 12s linear infinite;
+      opacity: 0.8;
     }
-    @keyframes waveDrift {
+    @keyframes waveMove {
       0% { transform: translateX(0); }
       100% { transform: translateX(-50%); }
     }
-
-    .horizon-ship-wrap {
-      position: absolute;
-      bottom: 8px;
-      left: 18%;
-      font-size: 24px;
-      filter: drop-shadow(0 3px 4px rgba(0,0,0,0.8));
-      animation: shipBob 2.5s ease-in-out infinite;
-      z-index: 3;
-    }
-    .horizon-ship-wrap-2 {
+    .ship-merchant-svg {
       position: absolute;
       bottom: 12px;
-      left: 36%;
-      font-size: 19px;
-      filter: drop-shadow(0 3px 4px rgba(0,0,0,0.8));
-      animation: shipBob 3s ease-in-out infinite 0.5s;
-      z-index: 3;
-      display: none;
+      left: 20%;
+      font-size: 1.6rem;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+      animation: bobbing 3s ease-in-out infinite;
     }
-    @keyframes shipBob {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-4px) rotate(2deg); }
-    }
-
-    .horizon-pirate-wrap {
+    .ship-pirate-svg {
       position: absolute;
-      bottom: 8px;
-      right: 14%;
-      font-size: 20px;
-      filter: drop-shadow(0 3px 4px rgba(0,0,0,0.9));
-      animation: pirateShadow 2s ease-in-out infinite;
-      z-index: 3;
+      bottom: 12px;
+      right: 15%;
+      font-size: 1.4rem;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+      animation: bobbing 2.6s ease-in-out infinite alternate;
     }
-    @keyframes pirateShadow {
-      0%, 100% { transform: translateY(-1px) rotate(-1deg); }
-      50% { transform: translateY(-5px) rotate(-3deg); }
+    @keyframes bobbing {
+      0% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-4px) rotate(3deg); }
+      100% { transform: translateY(0) rotate(-2deg); }
     }
-
-    .horizon-footer {
+    .horizon-meta-row {
       display: flex;
       justify-content: space-between;
-      align-items: flex-end;
-      font-size: 9.5px;
-      z-index: 2;
+      align-items: center;
+      font-size: 0.72rem;
     }
-    .horizon-vessel-title {
-      font-weight: 800;
-      color: #38bdf8;
-    }
-    .horizon-cargo-tag {
-      font-size: 8.5px;
-      color: var(--text-muted);
-    }
-    .horizon-threat-pill {
+    .ship-name { font-weight: 700; color: #fff; }
+    .ship-threat-badge {
       background: rgba(239, 68, 68, 0.2);
       border: 1px solid #ef4444;
       color: #fca5a5;
-      border-radius: 3px;
-      padding: 1px 5px;
-      font-weight: 800;
-      font-size: 8.5px;
-      text-transform: uppercase;
-      white-space: nowrap;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
     }
-
-    /* Scrollable Chronicle Feed (Warta Kota) */
-    .dispatch-log {
-      flex: 1;
-      background: #04080e;
-      border: 1px solid #131d27;
-      border-radius: 6px;
-      padding: 8px;
-      overflow-y: auto;
-      max-height: 170px;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      font-size: 10px;
-    }
-    .dispatch-log::-webkit-scrollbar { width: 5px; }
-    .dispatch-log::-webkit-scrollbar-thumb { background: #1a2938; border-radius: 3px; }
-
-    .log-item {
-      padding-bottom: 4px;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      color: var(--text-muted);
-      line-height: 1.3;
-    }
-    .log-item b { color: var(--text-main); }
-    .log-item .time { color: var(--border-gold); font-size: 8.5px; margin-right: 4px; }
-
-    /* ==========================================================================
-       3. BOTTOM DOCK (PORTRAIT TRADING CARDS)
-       ========================================================================== */
-    footer.card-dock {
+    .cargo-progress-bar {
       width: 100%;
-      max-width: 1240px;
-      background: linear-gradient(180deg, #101822 0%, #070d13 100%);
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 10px 14px;
-      box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.5);
+      height: 5px;
+      background: #1e293b;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .cargo-progress-fill {
+      height: 100%;
+      width: 65%;
+      background: var(--gold-primary);
+      transition: width 0.4s ease;
+    }
+
+    /* Chronicle Feed */
+    .chronicle-box {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
       gap: 6px;
+      flex: 1;
+      max-height: 180px;
+      overflow-y: auto;
     }
+    .chronicle-box::-webkit-scrollbar { width: 5px; }
+    .chronicle-box::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    .chronicle-entry {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      padding: 2px 0;
+    }
+    .chronicle-entry .ts { color: var(--gold-primary); font-family: monospace; }
+    .chronicle-entry.alert { color: #fca5a5; }
+    .chronicle-entry.success { color: #a7f3d0; }
 
-    .dock-bar {
+    /* Card Tray Dock */
+    footer.card-dock {
+      background: rgba(14, 22, 33, 0.98);
+      border-top: 1px solid var(--panel-border);
+      padding: 10px 16px 14px;
+      z-index: 50;
+      position: sticky;
+      bottom: 0;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.5);
+    }
+    .dock-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 4px;
+      margin-bottom: 8px;
+      max-width: 1400px;
+      margin: 0 auto 8px;
     }
     .dock-title {
-      font-family: var(--font-serif);
-      font-size: 11px;
+      font-size: 0.72rem;
       font-weight: 700;
-      color: var(--border-gold);
+      color: var(--gold-primary);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
     }
-    .btn-reroll-draft {
-      background: linear-gradient(180deg, #1e3a5f 0%, #102238 100%);
-      color: var(--gold-bright);
-      border: 1px solid var(--border-gold);
-      border-radius: 5px;
+    .btn-reroll {
+      background: rgba(229, 179, 66, 0.12);
+      border: 1px solid var(--gold-primary);
+      color: var(--gold-primary);
+      font-size: 0.7rem;
+      font-weight: 700;
       padding: 4px 10px;
-      font-size: 9.5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
+      border-radius: 4px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      transition: all 0.2s;
     }
-    .btn-reroll-draft:hover {
-      background: linear-gradient(180deg, #2b5285 0%, #163050 100%);
-      border-color: #fde047;
-      transform: translateY(-1px);
-      box-shadow: 0 3px 10px rgba(251, 191, 36, 0.35);
+    .btn-reroll:hover {
+      background: var(--gold-primary);
+      color: #0b1118;
     }
 
-    .cards-row {
+    .cards-scroll-container {
       display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
       gap: 12px;
-      justify-content: center;
-      align-items: center;
       overflow-x: auto;
-      overflow-y: visible;
-      padding: 16px 4px 6px 4px;
+      padding-bottom: 4px;
+      max-width: 1400px;
+      margin: 0 auto;
     }
-    .cards-row::-webkit-scrollbar { height: 5px; }
-    .cards-row::-webkit-scrollbar-thumb { background: #1a2a3a; border-radius: 3px; }
+    .cards-scroll-container::-webkit-scrollbar { height: 4px; }
+    .cards-scroll-container::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
 
-    .trading-card {
-      width: 140px;
-      min-width: 140px;
-      height: 210px;
-      background: #0e1620;
-      border: 2px solid #283a4f;
-      border-radius: 10px;
-      padding: 6px;
+    .card-item {
+      min-width: 130px;
+      max-width: 130px;
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 8px 6px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      gap: 4px;
       cursor: pointer;
       position: relative;
-      transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
-      outline: 1px solid rgba(197, 155, 39, 0.3);
-      outline-offset: -3px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
     }
-    .trading-card:hover {
-      transform: translateY(-10px) scale(1.03);
-      border-color: var(--gold-bright);
-      outline-color: var(--gold-bright);
-      box-shadow: 0 16px 30px rgba(0,0,0,0.9), 0 0 18px rgba(251, 191, 36, 0.35);
-      z-index: 10;
+    .card-item:hover {
+      transform: translateY(-4px);
+      border-color: var(--gold-primary);
+      box-shadow: 0 8px 16px rgba(229, 179, 66, 0.2);
     }
-    .trading-card.active-card {
-      border-color: #38bdf8;
-      outline-color: #38bdf8;
-      transform: translateY(-12px) scale(1.04);
-      box-shadow: 0 18px 32px rgba(0,0,0,0.9), 0 0 22px rgba(56, 189, 248, 0.5);
-      background: #112030;
+    .card-item.selected {
+      border: 2px solid var(--gold-primary);
+      transform: translateY(-6px);
+      box-shadow: 0 0 14px rgba(229, 179, 66, 0.5);
     }
-
-    /* S-Tier Legendary Foil Frame */
-    .trading-card.legendary-card {
-      border-color: #f59e0b;
-      outline-color: #fde047;
-      background: linear-gradient(180deg, #1c1505 0%, #0d121a 100%);
-      box-shadow: 0 8px 18px rgba(245, 158, 11, 0.3);
+    .card-item.legendary {
+      border: 1.5px solid #fbbf24;
+      background: linear-gradient(180deg, #2e1d05 0%, #130d03 100%);
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
     }
-    .trading-card.legendary-card:hover {
-      box-shadow: 0 16px 32px rgba(245, 158, 11, 0.5), 0 0 22px rgba(253, 224, 71, 0.6);
-    }
-
-    .tc-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 4px;
-      padding-bottom: 4px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .tc-title {
-      font-size: 10px;
+    .card-cost-badge {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid var(--gold-primary);
+      border-radius: 10px;
+      font-size: 0.6rem;
       font-weight: 800;
-      color: var(--text-main);
-      line-height: 1.1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .tc-cost {
-      background: #271a06;
-      border: 1px solid #855914;
-      border-radius: 4px;
+      color: var(--gold-primary);
       padding: 1px 5px;
-      font-size: 9.5px;
-      font-weight: 800;
-      color: var(--gold-bright);
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      gap: 2px;
     }
-
-    .tc-type-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .card-icon {
+      font-size: 1.4rem;
+      text-align: center;
       margin: 2px 0;
     }
-    .tc-type-pill {
-      font-size: 7.5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      padding: 1px 5px;
-      border-radius: 3px;
-    }
-    .type-eco { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #6ee7b7; }
-    .type-def { background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #7dd3fc; }
-    .type-merc { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; }
-    .type-legend { background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #fde047; }
-
-    .tc-zone-label {
-      font-size: 7px;
-      color: var(--text-dim);
+    .card-name {
+      font-size: 0.68rem;
       font-weight: 700;
-      text-transform: uppercase;
-    }
-
-    .tc-art-frame {
-      width: 100%;
-      height: 56px;
-      background: radial-gradient(circle at center, #192a3b 0%, #091118 100%);
-      border: 1px solid #24374a;
-      border-radius: 5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .tc-art-icon {
-      font-size: 28px;
-      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.8));
-      transition: transform 0.2s ease;
-    }
-    .trading-card:hover .tc-art-icon {
-      transform: scale(1.18);
-    }
-
-    .tc-body {
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 4px;
-      padding: 4px;
-      min-height: 52px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-    .tc-rule-text {
-      font-size: 8.5px;
-      color: var(--text-muted);
-      line-height: 1.25;
+      color: #fff;
       text-align: center;
+      line-height: 1.15;
     }
-    .tc-rule-text b { color: var(--gold-bright); }
-
-    .tc-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 7px;
+    .card-role-pill {
+      font-size: 0.55rem;
       font-weight: 700;
-      color: var(--text-dim);
-      padding-top: 2px;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-      text-transform: uppercase;
+      text-align: center;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text-muted);
+      margin-top: 2px;
     }
 
-    /* ==========================================================================
-       4. MODALS & OVERLAYS
-       ========================================================================== */
+    /* Modals & Splash Overlays */
     .modal-overlay {
       position: fixed;
-      inset: 0;
-      background: rgba(3, 7, 13, 0.88);
-      backdrop-filter: blur(5px);
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(4, 8, 15, 0.85);
+      backdrop-filter: blur(4px);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 100;
+      padding: 16px;
     }
     .modal-overlay.active {
       display: flex;
     }
-    .modal-box {
-      background: linear-gradient(180deg, #132030 0%, #09121c 100%);
-      border: 2px solid var(--border-gold);
-      border-radius: 12px;
-      padding: 24px;
-      max-width: 490px;
-      width: 90%;
-      text-align: center;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.9), 0 0 25px rgba(197, 155, 39, 0.3);
+    .modal-card {
+      background: linear-gradient(180deg, #162232 0%, #0d1622 100%);
+      border: 1.5px solid var(--gold-primary);
+      border-radius: 10px;
+      max-width: 500px;
+      width: 100%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.8);
       position: relative;
     }
-    .modal-box h2 {
-      font-family: var(--font-serif);
-      color: var(--gold-bright);
-      font-size: 20px;
-      letter-spacing: 1.5px;
-      margin-bottom: 6px;
+    .modal-card h2 {
+      font-size: 1.15rem;
+      color: var(--gold-primary);
+      letter-spacing: 0.5px;
       text-transform: uppercase;
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 6px;
     }
-    .modal-box p {
-      font-size: 11.5px;
-      color: var(--text-main);
-      line-height: 1.45;
-      margin-bottom: 16px;
+    .modal-body {
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 8px;
     }
     .btn-modal {
-      background: linear-gradient(180deg, #c59b27 0%, #855914 100%);
-      color: #030811;
-      border: 1px solid var(--gold-bright);
-      border-radius: 6px;
-      padding: 8px 18px;
-      font-size: 11.5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      cursor: pointer;
-      margin: 4px;
-      transition: all 0.2s ease;
-    }
-    .btn-modal:hover {
-      box-shadow: 0 0 14px rgba(251, 191, 36, 0.5);
-      transform: translateY(-1px);
-    }
-    .btn-modal-secondary {
-      background: #14212e;
-      color: var(--text-main);
-      border: 1px solid #30445a;
-    }
-
-    /* Pirate Bribe Modal Elements */
-    .bribe-tribute-badge {
-      background: #251403;
-      border: 1px solid #d97706;
-      border-radius: 8px;
-      padding: 10px;
-      margin: 12px 0;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-    }
-    .bribe-val {
-      font-size: 16px;
-      font-weight: 900;
-      color: var(--gold-bright);
-    }
-
-    /* Floating Toast Banner */
-    .toast-banner {
-      position: fixed;
-      top: 18px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-60px);
-      background: #162434;
-      border: 1px solid var(--border-gold);
-      color: var(--text-main);
-      padding: 8px 18px;
-      border-radius: 6px;
-      font-size: 11px;
+      font-size: 0.78rem;
       font-weight: 700;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.9);
-      transition: transform 0.25s ease-out;
-      z-index: 200;
-      pointer-events: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      border: 1px solid var(--panel-border);
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-    .toast-banner.show {
-      transform: translateX(-50%) translateY(0);
+    .btn-modal-primary {
+      background: var(--gold-primary);
+      color: #0b1118;
+      border-color: var(--gold-hover);
+    }
+    .btn-modal-danger {
+      background: #ef4444;
+      border-color: #f87171;
+      color: #fff;
+    }
+
+    /* Roadmap Steps Inside Campaign Briefing */
+    .roadmap-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 6px 0;
+    }
+    .roadmap-item {
+      background: rgba(0,0,0,0.3);
+      border-left: 3px solid var(--gold-primary);
+      padding: 6px 10px;
+      border-radius: 0 4px 4px 0;
+      font-size: 0.75rem;
+    }
+    .roadmap-item h4 {
+      color: var(--gold-primary);
+      font-size: 0.78rem;
+      margin-bottom: 2px;
+    }
+
+    /* Mobile Responsive Optimizations */
+    @media (max-width: 900px) {
+      header.hud-header {
+        padding: 6px 10px;
+      }
+      .brand-title h1 {
+        font-size: 0.95rem;
+      }
+      .brand-title .subtitle {
+        display: none;
+      }
+      .stats-pills {
+        gap: 4px;
+      }
+      .stat-pill {
+        padding: 3px 6px;
+        font-size: 0.68rem;
+        min-height: 26px;
+      }
+      .hud-controls-right {
+        gap: 6px;
+      }
+      .btn-open-harbor {
+        padding: 5px 10px;
+        font-size: 0.7rem;
+      }
+
+      main.game-container {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 0 10px;
+      }
+
+      .panels-row {
+        grid-template-columns: 1fr;
+      }
+
+      .chronicle-box {
+        max-height: 120px;
+      }
+
+      footer.card-dock {
+        padding: 6px 10px 10px;
+      }
+      .card-item {
+        min-width: 110px;
+        max-width: 110px;
+        padding: 6px 4px;
+      }
+      .card-icon {
+        font-size: 1.2rem;
+      }
+      .card-name {
+        font-size: 0.62rem;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- ==========================================================================
-       1. TOP HUD (STACKED)
-       ========================================================================== -->
-  <header class="hud-bar">
-    <!-- Row 1: Brand title & Navigation -->
-    <div class="hud-row-top">
-      <div class="brand-group">
-        <div class="brand-title">
-          <span class="emblem">⚜</span> KOTA SELAT
-        </div>
-        <div class="brand-subtitle">Syahbandar 1500 AD • Port of Melaka</div>
+  <!-- Ambient Night Lighting Layer -->
+  <div id="night-overlay"></div>
+
+  <!-- Top Header & Stacked HUD -->
+  <header class="hud-header">
+    <div class="hud-top-row">
+      <div class="brand-title">
+        <h1>⚜ Kota Selat</h1>
+        <span class="subtitle">Syahbandar 1500 AD • Port of Melaka</span>
       </div>
-      <div style="display: flex; gap: 6px;">
-        <button class="btn-action-pause" onclick="showCodexModal()" style="font-size: 9.5px; padding: 3px 8px;">
-          📖 Codex Guide
-        </button>
-        <button class="btn-action-pause" onclick="showLeaderboardModal()" style="font-size: 9.5px; padding: 3px 8px;">
-          🏆 Hall of Fame
-        </button>
+      <div class="hud-nav-btns">
+        <button class="btn-nav" onclick="showRoadmapModal()">🗺️ Campaign Acts</button>
+        <button class="btn-nav" onclick="showLeaderboardModal()">🏆 Hall of Fame</button>
+        <button class="btn-nav" onclick="showCodexModal()">📖 Codex</button>
       </div>
     </div>
 
-    <!-- Row 2: Metrics on Left aligned with Controls on Right -->
-    <div class="hud-row-bottom">
-      <div class="hud-metrics">
-        <!-- Gold -->
-        <div class="hud-pill pill-gold">
-          <span class="icon">🪙</span>
-          <div>
-            <span class="label">Treasury</span>
-            <span class="val" id="hud-gold">10 Gold</span>
-          </div>
+    <div class="hud-stats-row">
+      <!-- Metric Stats Pills -->
+      <div class="stats-pills">
+        <div class="stat-pill" title="Treasury Gold">
+          🪙 <span class="label">Gold</span>: <span class="val val-gold" id="stat-gold">10</span>
         </div>
-
-        <!-- Reputation -->
-        <div class="hud-pill pill-rep">
-          <span class="icon">⚓</span>
-          <div>
-            <span class="label">Reputation</span>
-            <span class="val" id="hud-rep">Tier 1 (0★)</span>
-          </div>
+        <div class="stat-pill" title="Port Reputation & Tier">
+          ⚓ <span class="label">Rep</span>: <span class="val val-rep" id="stat-rep">T1 (0★)</span>
         </div>
-
-        <!-- City Health -->
-        <div class="hud-pill pill-hp">
-          <span class="icon">🛡️</span>
-          <div>
-            <span class="label">City Health</span>
-            <span class="val" id="hud-hp">3 / 3</span>
-          </div>
+        <div class="stat-pill" title="Port Fortification HP">
+          🛡️ <span class="label">City HP</span>: <span class="val" id="stat-hp">3/3</span>
         </div>
-
-        <!-- Coastal Defense (Fixed Width & Boss Name Protection) -->
-        <div class="hud-pill pill-def">
-          <span class="icon">🏹</span>
-          <div>
-            <span class="label">Coastal Defense</span>
-            <span class="val" id="hud-def">0 DEF vs 2 THREAT</span>
-          </div>
+        <div class="stat-pill" title="Active Coastal Defense vs Threat">
+          🏹 <span class="label">Def</span>: <span class="val" id="stat-def">0 DEF vs 2</span>
         </div>
-
-        <!-- Citizens / Labor -->
-        <div class="hud-pill pill-pop">
-          <span class="icon">👥</span>
-          <div>
-            <span class="label">Citizens / Labor</span>
-            <span class="val" id="hud-pop">2 / 0 Labor</span>
-          </div>
+        <div class="stat-pill" title="Population & Labor Allocation">
+          👥 <span class="label">Labor</span>: <span class="val" id="stat-labor">2 / 0</span>
         </div>
-
-        <!-- Cargo Storage -->
-        <div class="hud-pill pill-storage" id="pill-storage">
-          <span class="icon">🏺</span>
-          <div>
-            <span class="label">Cargo Capacity</span>
-            <span class="val" id="hud-storage">2 / 0 Cargo</span>
-          </div>
+        <div class="stat-pill" title="Warehouse Spice Capacity">
+          🏺 <span class="label">Cargo</span>: <span class="val" id="stat-cargo">0 / 0</span>
         </div>
       </div>
 
-      <!-- Action Controls Pinned to Far Right -->
+      <!-- Action Controls & Astrolabe Dial -->
       <div class="hud-controls-right">
-        <div class="season-counter">
-          <div class="season-label">Monsoon Winds</div>
-          <div class="season-num" id="hud-season">Season 1 (55s)</div>
+        <!-- Astrolabe Celestial Dial -->
+        <div class="dial-container" title="Day/Night Tide Cycle">
+          <div class="astrolabe">
+            <div class="astrolabe-inner" id="astrolabe-disc">
+              <span class="sun-icon">☀️</span>
+              <span class="moon-icon">🌙</span>
+            </div>
+            <div class="dial-hand" id="dial-hand"></div>
+            <div class="dial-center-pin"></div>
+          </div>
+          <div class="dial-meta">
+            <span class="dial-season" id="dial-season-text">Season 1</span>
+            <span class="dial-phase-text" id="dial-phase-text">☀️ Siang (Day)</span>
+          </div>
         </div>
-        <button class="btn-action-horn" onclick="triggerDockInspection()">
-          📯 Sound Horn
+
+        <!-- Open Harbor Trigger Button -->
+        <button class="btn-open-harbor" id="btn-open-harbor" onclick="triggerOpenHarbor()">
+          ⚓ Open Harbor
         </button>
-        <button class="btn-action-pause" id="btn-pause-toggle" onclick="togglePause()">
-          ⏸️ Pause
-        </button>
+
+        <button class="btn-pause" id="btn-pause" onclick="togglePause()">⏸️ Pause</button>
       </div>
     </div>
   </header>
 
-  <!-- ==========================================================================
-       2. MAIN VIEWPORT: 5x5 GRID & BALAI SYAHBANDAR
-       ========================================================================== -->
-  <main class="viewport">
-    
-    <!-- LEFT: SEAMLESS 5x5 MAP (GAP: 0) -->
-    <section class="board-container">
-      <div class="board-header">
-        <span style="font-family: var(--font-serif); font-size: 11px; text-transform: uppercase; color: var(--border-gold); font-weight: 700;">
-          Port Territory Grid (5×5 Matrix)
-        </span>
-        <div class="legend">
-          <div class="legend-item"><div class="dot dot-sea"></div> Strait (20%)</div>
-          <div class="legend-item"><div class="dot dot-coast"></div> Coast</div>
-          <div class="legend-item"><div class="dot dot-inland"></div> Inland</div>
-          <div class="legend-item"><div class="dot dot-royal"></div> Royal Seat</div>
+  <!-- Main Game Canvas Layout -->
+  <main class="game-container">
+    <!-- Left Column: 5x5 Matrix -->
+    <section class="grid-section">
+      <div class="section-header">
+        <span>Port Territory Matrix (5×5)</span>
+        <div class="legend-indicators">
+          <div class="legend-tag"><div class="dot-sea"></div> Strait</div>
+          <div class="legend-tag"><div class="dot-coast"></div> Coast</div>
+          <div class="legend-tag"><div class="dot-land"></div> Inland</div>
         </div>
       </div>
 
-      <div class="grid-matrix-seamless" id="map-grid"></div>
+      <div class="board-grid" id="board-grid">
+        <!-- 25 Tiles Generated via JavaScript -->
+      </div>
     </section>
 
-    <!-- RIGHT: BALAI SYAHBANDAR (PANELS 4 & 5 + WARTA KOTA) -->
-    <aside class="command-center">
-      <div class="panel-header-title">
-        <span>📜</span> Harbour Master Directorate &amp; Naval Intel
-      </div>
-
-      <!-- DUAL INTEL CARDS -->
-      <div class="middle-intel-row">
-        
-        <!-- PANEL 4: DETAILED INSPECTOR (LABOR + DEMOLISH + UPGRADES) -->
-        <div class="inspector-card" id="inspector-panel">
-          <div class="inspector-head">
-            <div class="inspector-icon" id="insp-icon">⚓</div>
-            <div class="inspector-titles">
-              <h4 id="insp-title">Grand Pier Port</h4>
-              <span id="insp-sub">Fixed Anchor Dock [2, 0]</span>
-            </div>
+    <!-- Right Column: Intel & Maritime Horizon -->
+    <section class="intel-section">
+      <div class="panels-row">
+        <!-- Panel 4: Inspector Panel -->
+        <div class="panel-box" id="inspector-panel">
+          <div class="panel-title">District & Blueprint Inspector</div>
+          <div class="inspector-content" id="inspector-body">
+            Select any district tile or card blueprint to inspect administrative details, labor needs, and civic upgrade decrees.
           </div>
-          <p class="inspector-desc" id="insp-desc">
-            The sovereign timber pier of the Melaka Sultanate. All foreign merchant vessels berth here to pay customs duties and discharge spice cargo.
-          </p>
-          <div class="inspector-meta" id="insp-meta">
-            <span class="meta-badge">Capacity: 1 Vessel</span>
-            <span class="meta-badge">Status: Clear</span>
-          </div>
-          <div class="inspector-actions" id="insp-actions"></div>
+          <div class="inspector-actions" id="inspector-actions"></div>
         </div>
 
-        <!-- PANEL 5: ANIMATED MARITIME HORIZON (SHIPS & PIRATES) -->
-        <div class="horizon-card">
-          <div class="horizon-header">
-            <span>Strait of Melaka Horizon</span>
-            <div class="horizon-live-tag">
-              <span class="horizon-live-dot"></span>
-              <span id="hz-status-text">En Route</span>
-            </div>
+        <!-- Panel 5: Animated Maritime Horizon -->
+        <div class="horizon-box">
+          <div class="panel-title">Straits of Melaka Horizon</div>
+          <div class="horizon-canvas-wrapper">
+            <div class="horizon-celestial" id="horizon-celestial"></div>
+            <div class="ship-merchant-svg" id="horizon-merchant-ship">⛵</div>
+            <div class="ship-pirate-svg" id="horizon-pirate-ship">🏴‍☠️</div>
+            <div class="horizon-wave"></div>
           </div>
-
-          <!-- Animated Horizon Canvas -->
-          <div class="horizon-stage">
-            <div class="horizon-sun"></div>
-            <div class="horizon-ship-wrap" id="hz-vessel-icon">⛵</div>
-            <div class="horizon-ship-wrap-2" id="hz-vessel-icon-2">🚢</div>
-            <div class="horizon-pirate-wrap" id="hz-pirate-icon">☠️</div>
-            <div class="horizon-waves"></div>
-          </div>
-
-          <div class="horizon-footer">
+          <div class="horizon-meta-row">
             <div>
-              <div class="horizon-vessel-title" id="hz-vessel-name">Javanese Merchant Prahu</div>
-              <div class="horizon-cargo-tag" id="hz-cargo-tag">Origin: Malay Archipelago • Tariff: +4 Gold</div>
+              <span class="ship-name" id="horizon-ship-title">Perahu Dagang Jawa</span>
+              <div style="font-size: 0.62rem; color: var(--text-muted);" id="horizon-cargo-demand">Muatan: 2 Rempah (Need 2 Cargo)</div>
             </div>
-            <div>
-              <span class="horizon-threat-pill" id="hz-threat-pill">Raider (2 DEF)</span>
-            </div>
+            <div class="ship-threat-badge" id="horizon-threat-badge">Pirate Skiff (2 DEF)</div>
+          </div>
+          <div class="cargo-progress-bar">
+            <div class="cargo-progress-fill" id="cargo-progress-fill"></div>
           </div>
         </div>
-
       </div>
 
-      <!-- Scrollable Chronicle Feed (Warta Kota) -->
-      <div class="dispatch-log" id="dispatch-log">
-        <div class="log-item">
-          <span class="time">00:01</span> <b>Harbour Master Decree:</b> Port of Melaka is open. Southwest monsoons guide foreign trade fleets ashore.
-        </div>
-        <div class="log-item">
-          <span class="time">00:02</span> <b>Civic Ordinance:</b> The Balai Penghulu stands at [2, 2] to coordinate labor. Emergency repairs and Istana upgrades are authorized.
-        </div>
+      <!-- Warta Kota Chronicle Feed -->
+      <div class="chronicle-box" id="chronicle-box">
+        <div class="chronicle-entry success"><span class="ts">[00:00]</span> Port opened. The Syahbandar has assumed administration of Melaka.</div>
       </div>
-    </aside>
-
+    </section>
   </main>
 
-  <!-- ==========================================================================
-       3. BOTTOM DOCK (PORTRAIT TRADING CARDS)
-       ========================================================================== -->
+  <!-- Card Dock Tray -->
   <footer class="card-dock">
-    <div class="dock-bar">
-      <div class="dock-title">
-        <span>🗂️</span> Harbour Master Directives (Active Hand)
-      </div>
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <button class="btn-reroll-draft" onclick="rerollHandDraft()">
-          🔄 Refresh Draft (2 Gold)
-        </button>
-        <div style="font-size: 9.5px; color: var(--text-muted);" id="dock-guide-text">
-          Select a card, then click a valid land tile. Stack identical cards to upgrade up to ★3.
-        </div>
-      </div>
+    <div class="dock-header">
+      <div class="dock-title">Syahbandar Blueprints & Decrees</div>
+      <button class="btn-reroll" onclick="rerollDraft()">🔄 Reroll Draft (2 Gold)</button>
     </div>
-
-    <!-- 1 Horizontal Row of Portrait Cards -->
-    <div class="cards-row" id="card-hand"></div>
+    <div class="cards-scroll-container" id="cards-container">
+      <!-- 4 Cards Rendered Dynamically -->
+    </div>
   </footer>
 
-  <!-- ==========================================================================
-       4. MODALS & DIALOGS
-       ========================================================================== -->
-
-  <!-- Title Landing Screen -->
-  <div class="modal-overlay active" id="title-modal">
-    <div class="modal-box">
-      <h2 style="font-size: 24px;">⚜ KOTA SELAT ⚜</h2>
-      <div style="font-size: 11px; text-transform: uppercase; color: var(--border-gold); font-weight: 700; margin-bottom: 12px;">
-        Syahbandar 1500 AD • Sovereign Port of Melaka
+  <!-- Campaign Briefing / Roadmap Modal -->
+  <div class="modal-overlay" id="roadmap-modal">
+    <div class="modal-card">
+      <h2>🗺️ 24-Season Campaign Roadmap</h2>
+      <div class="modal-body">
+        <p>The Sultanate of Melaka demands steady governance across 3 distinct historical chapters leading up to the Imperial Ming visit:</p>
+        <div class="roadmap-list">
+          <div class="roadmap-item">
+            <h4>Babak I: Muara Berbatu (Seasons 1–8)</h4>
+            <p>Establish trade storage, secure the coastline against raider skiffs, and survive Panglima Hitam's early probe at Season 8.</p>
+          </div>
+          <div class="roadmap-item">
+            <h4>Babak II: Zaman Keemasan (Seasons 9–16)</h4>
+            <p>Experience population booms and weather crises (Monsoon tides & Cholera). Upgrade to Istana Melaka to open the 2nd Port!</p>
+          </div>
+          <div class="roadmap-item">
+            <h4>Babak III: Armada Laksamana (Seasons 17–24)</h4>
+            <p>Withstand coordinated double-channel raids. Survive until Season 24 to welcome the Imperial Ming Treasure Fleet for complete victory.</p>
+          </div>
+        </div>
       </div>
-      <p>
-        Prior to the Portuguese conquest of 1511, Melaka is the premier trade entrepôt of Southeast Asia. You hold the mandate of the <b>Syahbandar</b> (Harbour Master)—safeguard arriving fleets, collect royal tariffs, house foreign merchants, manage public labor, and fortify the straits against marauding corsairs.
-      </p>
-      <div style="margin-top: 14px;">
-        <button class="btn-modal" onclick="startGameSession()">Start Term</button>
-        <button class="btn-modal btn-modal-secondary" onclick="showLeaderboardModal()">Hall of Fame</button>
-        <button class="btn-modal btn-modal-secondary" onclick="showCodexModal()">Codex Guide</button>
+      <div class="modal-actions">
+        <button class="btn-modal btn-modal-primary" onclick="closeModal('roadmap-modal')">Understood</button>
       </div>
     </div>
   </div>
 
-  <!-- Pirate Bribe Modal (Ufti Damai) -->
+  <!-- Act Transition Cinematic Modal -->
+  <div class="modal-overlay" id="act-modal">
+    <div class="modal-card" style="text-align: center; border-color: #fbbf24;">
+      <h2 id="act-modal-title" style="color: #fbbf24; font-size: 1.25rem;">⚜ BABAK II: ZAMAN KEEMASAN</h2>
+      <div class="modal-body" id="act-modal-desc">
+        A new historical era dawns upon the Straits of Melaka.
+      </div>
+      <div class="modal-actions" style="justify-content: center;">
+        <button class="btn-modal btn-modal-primary" onclick="closeModal('act-modal')">Advance Term</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pirate Bribe Modal -->
   <div class="modal-overlay" id="bribe-modal">
-    <div class="modal-box" style="border-color: #f59e0b;">
-      <h2 style="color: #f59e0b;">⚔️ PIRATE CONFRONTATION!</h2>
-      <div style="font-size: 11px; color: #fde68a; font-weight: 700; margin-bottom: 8px;">
-        Coastal defenses are breached! The Corsair Captain offers safe passage for tribute.
+    <div class="modal-card">
+      <h2 style="color: #f87171;">🏴‍☠️ Pirate Confrontation!</h2>
+      <div class="modal-body" id="bribe-modal-body">
+        Pirate war prahus have breached the harbor! Coastal defenses fell short. Will you pay tribute or endure the raid?
       </div>
-      <div style="font-size: 40px; margin: 4px 0;">💰</div>
-      <p id="bribe-modal-desc">
-        Will you pay the tribute from the royal treasury, or resist and endure physical bombardment to the port?
-      </p>
-      
-      <div class="bribe-tribute-badge">
-        <div>
-          <div style="font-size: 8px; text-transform: uppercase; color: var(--text-dim);">Demanded Tribute</div>
-          <div class="bribe-val" id="bribe-cost-display">8 Gold</div>
-        </div>
-        <div>
-          <div style="font-size: 8px; text-transform: uppercase; color: var(--text-dim);">Treasury Reserves</div>
-          <div class="bribe-val" id="bribe-treasury-display" style="color: #6ee7b7;">12 Gold</div>
-        </div>
-      </div>
-
-      <div>
-        <button class="btn-modal" id="btn-pay-bribe" onclick="resolveBribeChoice(true)" style="background: linear-gradient(180deg, #d97706 0%, #b45309 100%); color: #fff;">
-          🪙 Pay Tribute (Save Port HP)
-        </button>
-        <button class="btn-modal btn-modal-secondary" onclick="resolveBribeChoice(false)">
-          🛡️ Resist Attack (Endure Damage)
-        </button>
+      <div class="modal-actions">
+        <button class="btn-modal btn-modal-danger" onclick="refuseBribe()">Refuse & Resist (-1 HP)</button>
+        <button class="btn-modal btn-modal-primary" id="btn-pay-bribe" onclick="payBribe()">Pay Tribute (Bribe)</button>
       </div>
     </div>
   </div>
 
-  <!-- Pause Modal -->
-  <div class="modal-overlay" id="pause-modal">
-    <div class="modal-box">
-      <h2>⏸️ Administration Paused</h2>
-      <p>The monsoon winds and vessel movements are temporarily frozen. Review your urban layout and defenses.</p>
-      <button class="btn-modal" onclick="resumeGame()">Resume Term</button>
-      <button class="btn-modal btn-modal-secondary" onclick="restartGame()">Restart Term</button>
-    </div>
-  </div>
-
-  <!-- Panglima Hitam Boss Modal -->
-  <div class="modal-overlay" id="boss-event-modal">
-    <div class="modal-box" style="border-color: #ef4444;">
-      <h2 style="color: #ef4444;">☠️ PANGLIMA HITAM STRIKES!</h2>
-      <div style="font-size: 11px; color: #fca5a5; font-weight: 700; margin-bottom: 8px;">
-        Scourge of the Malacca Straits sighted on the horizon!
-      </div>
-      <div style="font-size: 44px; margin: 8px 0;">🏴‍☠️</div>
-      <p>
-        Panglima Hitam's dread war prahus open fire with culverins! If our coastal defense falls short, an Archer Watchtower will be blasted into rubble and our treasury plundered!
-      </p>
-      <button class="btn-modal" style="background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%); color: #fff; border-color: #f87171;" onclick="closeBossModal()">
-        Stand Fast to Arms!
-      </button>
-    </div>
-  </div>
-
-  <!-- Imperial Ming Treasure Fleet Victory Modal -->
-  <div class="modal-overlay" id="victory-modal">
-    <div class="modal-box" style="border-color: #f59e0b; box-shadow: 0 10px 50px rgba(245, 158, 11, 0.4);">
-      <h2 style="color: #fbbf24; font-size: 22px;">🐉 IMPERIAL MING FLEET ARRIVES!</h2>
-      <div style="font-size: 11px; color: #fef08a; font-weight: 800; text-transform: uppercase; margin-bottom: 10px;">
-        Tier 5 Imperial Entrepôt • Golden Hegemony Achieved
-      </div>
-      <div style="font-size: 48px; margin: 8px 0;">🐲 🚢 🎆</div>
-      <p>
-        The monumental <b>Imperial Ming Treasure Fleet (Armada Baochuan)</b> anchors across both northern and southern piers! Admiral emissaries bestow the Golden Seal of Sovereign Protection upon Melaka. Your administration as Syahbandar has immortalized the Sultanate in world history!
-      </p>
-      <div style="background: #171103; border: 1px solid #ca8a04; padding: 10px; border-radius: 6px; margin-bottom: 14px; font-size: 11px;">
-        <div>Seasons Governed: <b id="vic-season" style="color: #fbbf24;">16</b></div>
-        <div>Final Reputation: <b id="vic-rep" style="color: #6ee7b7;">Tier 5 (30★)</b></div>
-        <div>Treasury Accumulated: <b id="vic-gold" style="color: #fbbf24;">150 Gold</b></div>
-      </div>
-      <button class="btn-modal" onclick="restartGame()">Reign Again as Syahbandar</button>
-    </div>
-  </div>
-
-  <!-- Game Over Modal -->
-  <div class="modal-overlay" id="gameover-modal">
-    <div class="modal-box" style="border-color: #ef4444;">
-      <h2 style="color: #ef4444;">KOTA SELAT HAS FALLEN</h2>
-      <p id="gameover-reason">Maritime defenses collapsed under relentless pirate incursions. Melaka has lost naval control.</p>
-      <div style="background: #09131d; padding: 10px; border-radius: 6px; margin-bottom: 14px; font-size: 11px;">
-        <div>Seasons Governed: <b id="gov-season">1</b></div>
-        <div>Peak Reputation: <b id="gov-rep">0★</b></div>
-        <div>Total Gold Accumulated: <b id="gov-gold">0</b></div>
-      </div>
-      <button class="btn-modal" onclick="restartGame()">Commence New Term</button>
-    </div>
-  </div>
-
-  <!-- Hall of Fame / Leaderboard Modal -->
+  <!-- Hall of Fame Modal -->
   <div class="modal-overlay" id="leaderboard-modal">
-    <div class="modal-box">
-      <h2>🏆 Harbour Master Hall of Fame</h2>
-      <p>Honored tenures of Melaka's greatest Syahbandars:</p>
-      <div id="leaderboard-list" style="max-height: 160px; overflow-y: auto; text-align: left; font-size: 11px; margin-bottom: 14px; background: #08121c; padding: 8px; border-radius: 6px;"></div>
-      <button class="btn-modal" onclick="closeLeaderboardModal()">Dismiss</button>
+    <div class="modal-card">
+      <h2>🏆 Hall of Fame (Syahbandar Records)</h2>
+      <div class="modal-body" id="leaderboard-list">
+        <!-- LocalStorage Entries -->
+      </div>
+      <div class="modal-actions">
+        <button class="btn-modal btn-modal-primary" onclick="closeModal('leaderboard-modal')">Close</button>
+      </div>
     </div>
   </div>
 
-  <!-- Codex Guide Modal -->
+  <!-- Codex Modal -->
   <div class="modal-overlay" id="codex-modal">
-    <div class="modal-box" style="max-width: 540px; text-align: left;">
-      <h2 style="text-align: center;">📖 Harbour Master Codex</h2>
-      <div style="max-height: 240px; overflow-y: auto; font-size: 10.5px; color: var(--text-main); line-height: 1.45; padding-right: 4px;">
-        <p><b>1. Spatial Divisions:</b> The western channel (Col 0) is reserved for foreign fleets and the Port at [2, 0]. Watchtowers must guard the sandy Coast (Col 1). Inland tiles (Cols 2–4) host storage, dwellings, and civic administration.</p>
-        <p><b>2. Life Restoration (HP):</b> Gaining a new Reputation Tier restores +1 City Health automatically. The Balai Penghulu at [2, 2] also offers emergency repairs for 15 Gold and 1 Labor.</p>
-        <p><b>3. The Bribe Protocol:</b> If raiders outgun your defense, you can pay emergency tribute to buy safe passage and protect your port HP at the cost of your treasury and prestige.</p>
-        <p><b>4. Istana Melaka &amp; Second Port:</b> Upgrade the Balai Penghulu to the Istana Melaka (45 Gold, 8 Pop, Tier 3 Rep). This opens the Second Port at [4, 0]—doubling arrivals and tariffs!</p>
-        <p><b>5. Catastrophes &amp; Outlaws:</b> Beware of Cholera outbreaks reducing population, monsoon floods submerging coastal tiles, and outlaws stealing gold if unemployment is neglected!</p>
-        <p><b>6. Ultimate Victory:</b> Reach Tier 5 Reputation (30★) with the Istana Melaka active to summon the Imperial Ming Treasure Fleet and claim sovereign victory!</p>
+    <div class="modal-card">
+      <h2>📖 Harbour Master Codex</h2>
+      <div class="modal-body">
+        <p><strong>• Day Phase:</strong> Build, draft, and upgrade structures. Click <em>Open Harbor</em> when ready to bring in incoming ships.</p>
+        <p><strong>• Night Phase:</strong> Merchant fleets dock to unload spices and pay tariffs. Defenses engage shadowing pirates.</p>
+        <p><strong>• Stacking:</strong> Drag duplicate cards onto matching buildings to stack them up to <strong>★3</strong> for doubled benefits.</p>
+        <p><strong>• Workforce Balance:</strong> Watchtowers and Warehouses require active labor. Keep your Fisherman Villages staffed!</p>
       </div>
-      <div style="text-align: center; margin-top: 14px;">
-        <button class="btn-modal" onclick="closeCodexModal()">Close Codex</button>
+      <div class="modal-actions">
+        <button class="btn-modal btn-modal-primary" onclick="closeModal('codex-modal')">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- Floating Toast Banner -->
-  <div class="toast-banner" id="toast-banner">Notice</div>
+  <!-- Game Over / Victory Modal -->
+  <div class="modal-overlay" id="endgame-modal">
+    <div class="modal-card" style="text-align: center;">
+      <h2 id="endgame-title">Melaka Has Fallen</h2>
+      <div class="modal-body" id="endgame-body"></div>
+      <div class="modal-actions" style="justify-content: center;">
+        <button class="btn-modal btn-modal-primary" onclick="restartGame()">Begin New Administration</button>
+      </div>
+    </div>
+  </div>
 
-  <!-- ==========================================================================
-       5. GAME SCRIPT LOGIC
-       ========================================================================== -->
   <script>
-    // --------------------------------------------------------------------------
-    // A. DATA DEFINITIONS
-    // --------------------------------------------------------------------------
-    const CARDS = [
-      {
-        id: 'gudang_rempah',
-        name: 'Spice Warehouse',
-        type: 'Economic',
-        cost: 4,
-        workforceReq: 1,
-        capacityVal: 3,
-        zone: 'Inland',
-        icon: '🏺',
-        desc: '+3 Cargo Storage. Yields +2 bonus Gold whenever any merchant vessel docks safely.'
-      },
-      {
-        id: 'rumah_tumpangan',
-        name: 'Merchant Inn',
-        type: 'Commercial',
-        cost: 3,
-        workforceReq: 1,
-        capacityVal: 0,
-        zone: 'Inland',
-        icon: '🏮',
-        desc: '+1 bonus Reputation whenever a Tier 2 or higher merchant ship docks safely.'
-      },
-      {
-        id: 'menara_pemanah',
-        name: 'Archer Watchtower',
-        type: 'Defense',
-        cost: 6,
-        workforceReq: 1,
-        capacityVal: 0,
-        durability: 4,
-        zone: 'Coast',
-        icon: '🏹',
-        desc: 'Coastal watchtower. Grants +3 Defense (DEF) per star. Decays after 4 seasons.'
-      },
-      {
-        id: 'kontrak_pendekar',
-        name: 'Mercenary Contract',
-        type: 'Auxiliary',
-        cost: 2,
-        workforceReq: 0,
-        capacityVal: 0,
-        durability: 3,
-        zone: 'Any Land',
-        icon: '🗡️',
-        desc: 'Emergency militia: Immediate +4 Defense (DEF). Expires automatically after 3 seasons.'
-      },
-      {
-        id: 'kampung_nelayan',
-        name: 'Fisherman Village',
-        type: 'Sustenance',
-        cost: 2,
-        workforceReq: 0,
-        capacityVal: 0,
-        populationVal: 2,
-        zone: 'Any Land',
-        icon: '🛖',
-        desc: 'Coastal settlement. Provides +2 Citizens to supply the city with necessary labor.'
-      },
-      // Rare S-Tier Legendary Figure Cards (1 per run limit)
-      {
-        id: 'hang_tuah',
-        name: 'Laksamana Hang Tuah',
-        type: 'Legendary',
-        cost: 8,
-        workforceReq: 0,
-        capacityVal: 0,
-        isLegend: true,
-        zone: 'Coast',
-        icon: '⚔️',
-        desc: 'Legendary Admiral of Melaka. Bestows permanent +5 Coastal Defense. Only 1 legend card per run.'
-      },
-      {
-        id: 'cheng_ho',
-        name: 'Laksamana Cheng Ho',
-        type: 'Legendary',
-        cost: 8,
-        workforceReq: 0,
-        capacityVal: 0,
-        isLegend: true,
-        zone: 'Inland',
-        icon: '📜',
-        desc: 'Ming Imperial Envoy. Generates +2 Gold tribute passively every season. Only 1 legend card per run.'
-      },
-      {
-        id: 'sultan_muzaffar',
-        name: 'Sultan Muzaffar Shah',
-        type: 'Legendary',
-        cost: 8,
-        workforceReq: 0,
-        capacityVal: 0,
-        isLegend: true,
-        zone: 'Inland',
-        icon: '👑',
-        desc: 'Great Monarch of the Golden Age. Instant +5 Reputation surge upon coronation. Only 1 legend card per run.'
-      }
+    /* =====================================================================
+       KOTA SELAT: 24-SEASON 3-ACT ENGINE
+       ===================================================================== */
+    const GAME_CONFIG = {
+      MAX_SEASONS: 24,
+      DAY_DURATION_SEC: 50,
+      NIGHT_DURATION_SEC: 4.5
+    };
+
+    let gameState = {
+      season: 1,
+      act: 1,
+      phase: 'DAY', // 'DAY' or 'NIGHT'
+      secondsLeft: GAME_CONFIG.DAY_DURATION_SEC,
+      isPaused: false,
+      gold: 12,
+      reputationStars: 0,
+      reputationTier: 1,
+      cityHp: 3,
+      maxHp: 3,
+      hasSecondPort: false,
+      selectedCardId: null,
+      selectedTileCoord: null,
+      legendaryDrafted: null, // Hang Tuah, Cheng Ho, or Muzaffar
+      idleUnemployedStreak: 0,
+      board: Array(5).fill(null).map(() => Array(5).fill(null)),
+      draftHand: [],
+      timerInterval: null,
+      currentShip: null,
+      currentThreat: 2,
+      floodedTiles: [] // Coordinates of flood tides
+    };
+
+    // Card Blueprint Catalog
+    const CARD_CATALOG = [
+      { id: 'warehouse', name: 'Spice Warehouse', icon: '🏺', cost: 4, type: 'Economy', zone: 'land', laborNeed: 1, desc: '+3 Cargo capacity. Generates +2 Gold per docked merchant.' },
+      { id: 'tower', name: 'Archer Watchtower', icon: '🏹', cost: 5, type: 'Defense', zone: 'coast', laborNeed: 1, desc: '+3 Coastal DEF. Lifespan: 4 seasons.' },
+      { id: 'village', name: 'Fisherman Village', icon: '🛖', cost: 2, type: 'Population', zone: 'all', laborNeed: 0, desc: 'Generates +2 Population / Labor per star level.' },
+      { id: 'inn', name: 'Merchant Inn', icon: '🏮', cost: 3, type: 'Commerce', zone: 'land', laborNeed: 1, desc: '+1 Passive Gold & +1 Reputation every 2 seasons.' },
+      { id: 'mercenary', name: 'Mercenary Contract', icon: '🗡️', cost: 3, type: 'Defense', zone: 'all', laborNeed: 0, desc: '+4 Coastal DEF immediately. Lasts 2 seasons. No labor needed.' }
     ];
 
-    const TRADE_VESSELS = [
-      {
-        name: 'Javanese Merchant Prahu',
-        origin: 'Malay Archipelago',
-        tariff: 4,
-        demand: 2,
-        repGain: 1,
-        threat: 2,
-        threatName: 'Raider Skiff',
-        icon: '⛵',
-        cargo: 'Rice & Sandalwood'
-      },
-      {
-        name: 'Persian Gulf Dhow',
-        origin: 'Persia & Arabia',
-        tariff: 7,
-        demand: 4,
-        repGain: 1,
-        threat: 4,
-        threatName: '2 Corsair Skiffs',
-        icon: '⛵',
-        cargo: 'Frankincense & Glassware'
-      },
-      {
-        name: 'Ming Dynasty Trade Junk',
-        origin: 'China (Canton)',
-        tariff: 12,
-        demand: 6,
-        repGain: 2,
-        threat: 6,
-        threatName: 'Armed War Junk',
-        icon: '🚢',
-        cargo: 'Fine Silk & Celadon Porcelain'
-      },
-      {
-        name: 'Gujarat Royal Galleon',
-        origin: 'India (Cambay)',
-        tariff: 18,
-        demand: 8,
-        repGain: 3,
-        threat: 8,
-        threatName: 'Pirate Armada Flotilla',
-        icon: '⛴️',
-        cargo: 'Damask Fabric & Raw Jewels'
-      }
+    const S_TIER_LEGENDS = [
+      { id: 'hang_tuah', name: 'Laksamana Hang Tuah', icon: '👑', cost: 0, type: 'Legendary', zone: 'coast', laborNeed: 0, desc: '+5 DEF permanently. All coastal watchtowers become immune to decay!' },
+      { id: 'cheng_ho', name: 'Laksamana Cheng Ho', icon: '🐉', cost: 0, type: 'Legendary', zone: 'land', laborNeed: 0, desc: '+4 Gold royal tribute every season AND 50% discount on all pirate bribes!' },
+      { id: 'muzaffar_shah', name: 'Sultan Muzaffar Shah', icon: '⚜️', cost: 0, type: 'Legendary', zone: 'land', laborNeed: 0, desc: 'Instant +5 Reputation AND slashes the Istana Melaka cost to 20 Gold & 5 Pop.' }
     ];
 
-    // --------------------------------------------------------------------------
-    // B. STATE VARIABLES
-    // --------------------------------------------------------------------------
-    let gold = 10;
-    let reputation = 0;
-    let currentTier = 1;
-    let portHp = 3;
-    let season = 1;
-    let seasonDuration = 55;
-    let timeLeft = 55;
-    let timerInterval = null;
-    let isPaused = false;
-    let gameActive = false;
-
-    let hasIstana = false;
-    let hasSecondPort = false;
-    let draftedLegendary = false; // Restricts to max 1 legendary card per run
-    let unemployedSeasonCount = 0; // Tracks consecutive seasons with idle workers
-
-    let totalGoldEarned = 10;
-    let peakReputation = 0;
-
-    let selectedCardHandIdx = null;
-    let currentVessel = TRADE_VESSELS[0];
-    let isBossIncursion = false;
-    let pendingBribeResolution = null;
-
-    // 5x5 Grid (25 tiles): Col 0 = Sea, Col 1 = Coast, Cols 2-4 = Inland
-    let board = Array(25).fill(null);
-    let submergedTileIdx = null; // Used for Monsoon Surge catastrophe
-
-    // Active Card Hand
-    let hand = ['kampung_nelayan', 'gudang_rempah', 'menara_pemanah', 'kontrak_pendekar'];
-
-    // --------------------------------------------------------------------------
-    // C. INITIALIZATION & SESSION CONTROL
-    // --------------------------------------------------------------------------
-    function startGameSession() {
-      document.getElementById('title-modal').classList.remove('active');
-      gameActive = true;
-      initGame();
-    }
-
+    /* Initialize Game */
     function initGame() {
-      gold = 10;
-      reputation = 0;
-      currentTier = 1;
-      portHp = 3;
-      season = 1;
-      timeLeft = seasonDuration;
-      isPaused = false;
-      selectedCardHandIdx = null;
-      board = Array(25).fill(null);
-      hasIstana = false;
-      hasSecondPort = false;
-      draftedLegendary = false;
-      unemployedSeasonCount = 0;
-      submergedTileIdx = null;
-      pendingBribeResolution = null;
-
-      // Anchor Balai Penghulu at [2, 2] (index 12)
-      board[12] = {
-        id: 'balai_penghulu',
+      // Setup grid & anchor Balai Penghulu at [2, 2]
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
+          gameState.board[r][c] = null;
+        }
+      }
+      gameState.board[2][2] = {
+        id: 'townhall',
         name: 'Balai Penghulu',
-        type: 'Civic Seat',
-        cost: 0,
-        workforceReq: 0,
-        capacityVal: 0,
-        zone: 'Royal',
         icon: '🏛️',
-        level: 1,
-        desc: 'City Town Hall. Coordinates port labor and civic ordinances. Enables emergency port repairs and royal Istana expansion.'
+        stars: 1,
+        type: 'Civic',
+        durability: Infinity,
+        laborNeed: 0,
+        desc: 'Administrative center of Melaka. Coordinates port labor.'
       };
 
-      hand = ['kampung_nelayan', 'gudang_rempah', 'menara_pemanah', 'kontrak_pendekar'];
-      currentVessel = TRADE_VESSELS[0];
-      totalGoldEarned = 10;
-      peakReputation = 0;
-
+      dealFreshDraft();
       renderBoard();
-      renderHand();
       updateHUD();
-      updateHorizonVessel();
-      startSeasonTimer();
-      addLog("<b>Harbour Master Decree:</b> Port of Melaka is open. Construct fortifications and expand trade throughput.");
+      updateHorizon();
+      startDayCycle();
+      logChronicle('⚜ Welcome to Kota Selat. Term officially commenced.', 'success');
     }
 
-    function togglePause() {
-      if (!gameActive) return;
-      if (isPaused) {
-        resumeGame();
-      } else {
-        pauseGame();
-      }
-    }
+    /* Start / Manage Day Timer */
+    function startDayCycle() {
+      gameState.phase = 'DAY';
+      gameState.secondsLeft = GAME_CONFIG.DAY_DURATION_SEC;
+      document.body.classList.remove('is-night');
+      document.getElementById('dial-phase-text').innerText = '☀️ Siang (Day)';
+      document.getElementById('btn-open-harbor').disabled = false;
 
-    function pauseGame() {
-      isPaused = true;
-      clearInterval(timerInterval);
-      document.getElementById('pause-modal').classList.add('active');
-      document.getElementById('btn-pause-toggle').innerText = '▶️ Resume';
-    }
+      clearInterval(gameState.timerInterval);
+      gameState.timerInterval = setInterval(() => {
+        if (gameState.isPaused) return;
 
-    function resumeGame() {
-      isPaused = false;
-      document.getElementById('pause-modal').classList.remove('active');
-      document.getElementById('btn-pause-toggle').innerText = '⏸️ Pause';
-      startSeasonTimer();
-    }
+        gameState.secondsLeft--;
+        updateDialVisuals();
 
-    function restartGame() {
-      clearInterval(timerInterval);
-      document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-      initGame();
-    }
-
-    function startSeasonTimer() {
-      clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        if (isPaused) return;
-        timeLeft--;
-        document.getElementById('hud-season').innerText = `Season ${season} (${timeLeft}s)`;
-        if (timeLeft <= 0) {
-          triggerDockInspection();
+        if (gameState.secondsLeft <= 0) {
+          triggerOpenHarbor();
         }
       }, 1000);
     }
 
-    // --------------------------------------------------------------------------
-    // D. SYSTEM CALCULATIONS & RESOURCE METRICS
-    // --------------------------------------------------------------------------
-    function calculateMetrics() {
-      let pop = 2; // Base population
-      let workforceNeeded = 0;
-      let capacity = 0;
-      let def = 0;
-      let passiveGold = 0;
-
-      board.forEach((b) => {
-        if (!b) return;
-        const star = b.level || 1;
-        if (b.id === 'kampung_nelayan') {
-          pop += 2 * star;
-          passiveGold += 1 * star;
-        } else if (b.id === 'gudang_rempah') {
-          capacity += 3 * star;
-          workforceNeeded += 1 * star;
-        } else if (b.id === 'rumah_tumpangan') {
-          workforceNeeded += 1 * star;
-        } else if (b.id === 'menara_pemanah') {
-          def += 3 * star;
-          workforceNeeded += 1 * star;
-        } else if (b.id === 'kontrak_pendekar') {
-          def += 4 * star;
-        } else if (b.id === 'hang_tuah') {
-          def += 5;
-        } else if (b.id === 'cheng_ho') {
-          passiveGold += 2;
-        } else if (b.id === 'istana_melaka') {
-          pop += 4;
-          passiveGold += 3;
-        }
-      });
-
-      // Workforce penalty: if needed > pop, defense efficiency drops
-      let defPenalty = 0;
-      if (workforceNeeded > pop) {
-        defPenalty = (workforceNeeded - pop) * 2;
-        def = Math.max(1, def - defPenalty);
-      }
-
-      return { pop, workforceNeeded, capacity, def, passiveGold, defPenalty };
+    function updateDialVisuals() {
+      const progress = 1 - (gameState.secondsLeft / GAME_CONFIG.DAY_DURATION_SEC);
+      const degrees = progress * 180; // 0 to 180 deg for daytime arc
+      document.getElementById('dial-hand').style.transform = `translate(-50%, -100%) rotate(${degrees}deg)`;
     }
 
-    function updateHUD() {
-      const metrics = calculateMetrics();
+    /* Trigger Night Phase (Open Harbor) */
+    function triggerOpenHarbor() {
+      if (gameState.phase === 'NIGHT') return;
+      clearInterval(gameState.timerInterval);
+      gameState.phase = 'NIGHT';
+      document.body.classList.add('is-night');
+      document.getElementById('dial-phase-text').innerText = '🌙 Malam (Night)';
+      document.getElementById('dial-hand').style.transform = `translate(-50%, -100%) rotate(270deg)`;
+      document.getElementById('btn-open-harbor').disabled = true;
 
-      document.getElementById('hud-gold').innerText = `${gold} Gold`;
-      
-      const repTier = Math.floor(reputation / 6) + 1;
-      document.getElementById('hud-rep').innerText = `Tier ${repTier} (${reputation}★)`;
-      
-      document.getElementById('hud-hp').innerText = `${portHp} / 3`;
+      logChronicle(`⚓ Night falls over Season ${gameState.season}. Port gates opened! Merchant fleet entering straits.`);
 
-      // Abbreviate Boss title to "P. HITAM" so HUD button layout remains strictly stable
-      const incomingThreat = isBossIncursion ? 10 : (hasSecondPort ? currentVessel.threat + 3 : currentVessel.threat);
-      const threatLabel = isBossIncursion ? 'P. HITAM (10 DEF)' : `${incomingThreat} THREAT`;
-      document.getElementById('hud-def').innerText = `${metrics.def} DEF vs ${threatLabel}`;
+      // Resolve night operations after short animation
+      setTimeout(() => {
+        resolveNightOperations();
+      }, 3500);
+    }
 
-      document.getElementById('hud-pop').innerText = `${metrics.pop} / ${metrics.workforceNeeded} Labor`;
+    /* Night Resolution Engine */
+    function resolveNightOperations() {
+      const laborStats = calculateLabor();
+      const defStats = calculateDefense();
+      const currentThreat = calculateThreat();
 
-      const storageEl = document.getElementById('pill-storage');
-      const hudStorage = document.getElementById('hud-storage');
-      const totalDemand = hasSecondPort ? currentVessel.demand * 2 : currentVessel.demand;
-      hudStorage.innerText = `${totalDemand} / ${metrics.capacity} Cargo`;
-      
-      if (metrics.capacity < totalDemand) {
-        storageEl.classList.add('warning');
+      // Check combat
+      if (defStats.totalDef >= currentThreat) {
+        logChronicle(`🏹 Coastal Victory! Defenses repelled raiders (${defStats.totalDef} DEF vs ${currentThreat} Threat).`, 'success');
+        collectTradeCargo(true);
       } else {
-        storageEl.classList.remove('warning');
+        // Defense deficit: Trigger Bribe Prompt
+        promptBribe(currentThreat, defStats.totalDef);
+        return; // Pause resolution until bribe resolved
       }
+
+      finishSeasonResolution();
     }
 
-    // --------------------------------------------------------------------------
-    // E. SEAMLESS 5x5 BOARD RENDERING (GAP: 0)
-    // --------------------------------------------------------------------------
-    function renderBoard() {
-      const gridEl = document.getElementById('map-grid');
-      gridEl.innerHTML = '';
-
-      for (let idx = 0; idx < 25; idx++) {
-        const r = Math.floor(idx / 5);
-        const c = idx % 5;
-        const building = board[idx];
-
-        const cell = document.createElement('div');
-        cell.className = 'tile-cell';
-        cell.dataset.index = idx;
-
-        // Biome Class
-        if (c === 0) {
-          if (r === 2) {
-            cell.classList.add('biome-port'); // Main Grand Pier
-          } else if (r === 4 && hasSecondPort) {
-            cell.classList.add('biome-port', 'port-south'); // Dermaga Selatan
-          } else {
-            cell.classList.add('biome-sea');
-          }
-        } else if (c === 1) {
-          cell.classList.add('biome-coast');
-        } else {
-          cell.classList.add('biome-inland');
-        }
-
-        // Royal District at [2, 2]
-        if (idx === 12) {
-          cell.classList.add('royal-district');
-          if (hasIstana) cell.classList.add('istana-active');
-        }
-
-        // Monsoon Flood Submerged State
-        if (submergedTileIdx === idx) {
-          cell.classList.add('submerged');
-        }
-
-        // Validity highlight during placement
-        if (selectedCardHandIdx !== null) {
-          const cardKey = hand[selectedCardHandIdx];
-          const cardDef = CARDS.find(item => item.id === cardKey);
-          if (isValidPlacement(cardDef, r, c, building, idx)) {
-            cell.classList.add('valid-placement');
-          }
-        }
-
-        // Coordinate indicator
-        let html = `<div class="tile-coord">[${r},${c}]</div>`;
-
-        // Render Ports
-        if (c === 0 && r === 2) {
-          html += `<div class="port-emblem">⚓</div>`;
-        } else if (c === 0 && r === 4 && hasSecondPort) {
-          html += `<div class="port-emblem" style="color: #fbbf24;">⚓</div>`;
-        }
-        // Render Active Building
-        else if (building) {
-          const starString = building.level ? '★'.repeat(building.level) : '';
-          
-          html += `
-            <div class="building-token">
-              <div class="b-icon">${building.icon}</div>
-              <div class="b-name">${building.name}</div>
-              ${starString ? `<div class="tile-stars">${starString}</div>` : ''}
-            </div>
-          `;
-
-          // Lifespan Badge for Towers or Mercenaries
-          if (building.durability !== undefined) {
-            const isMerc = building.id === 'kontrak_pendekar';
-            html += `
-              <div class="tile-badge-life ${isMerc ? 'merc' : ''}">
-                ⏳ ${building.durability}s
-              </div>
-            `;
-          }
-        }
-
-        cell.innerHTML = html;
-        cell.onclick = () => onTileClicked(idx);
-        gridEl.appendChild(cell);
-      }
-    }
-
-    // --------------------------------------------------------------------------
-    // F. CARD DECK DRAFTING & PLACEMENT LOGIC
-    // --------------------------------------------------------------------------
-    function renderHand() {
-      const handEl = document.getElementById('card-hand');
-      handEl.innerHTML = '';
-
-      hand.forEach((cardKey, idx) => {
-        const card = CARDS.find(c => c.id === cardKey);
-        if (!card) return;
-
-        const cardEl = document.createElement('div');
-        let cardClass = 'trading-card';
-        if (selectedCardHandIdx === idx) cardClass += ' active-card';
-        if (card.isLegend) cardClass += ' legendary-card';
-        cardEl.className = cardClass;
-        
-        let typePillClass = 'type-eco';
-        if (card.type === 'Defense') typePillClass = 'type-def';
-        if (card.type === 'Auxiliary') typePillClass = 'type-merc';
-        if (card.type === 'Legendary') typePillClass = 'type-legend';
-
-        cardEl.innerHTML = `
-          <div class="tc-header">
-            <span class="tc-title">${card.name}</span>
-            <div class="tc-cost">🪙 ${card.cost}</div>
-          </div>
-          <div class="tc-type-bar">
-            <span class="tc-type-pill ${typePillClass}">${card.type}</span>
-            <span class="tc-zone-label">${card.zone}</span>
-          </div>
-          <div class="tc-art-frame">
-            <div class="tc-art-icon">${card.icon}</div>
-          </div>
-          <div class="tc-body">
-            <p class="tc-rule-text">${card.desc}</p>
-          </div>
-          <div class="tc-footer">
-            <span>${card.durability ? 'Temporary' : (card.isLegend ? 'S-Tier' : 'Structure')}</span>
-            <span>${card.durability ? `⏳ ${card.durability} Seasons` : (card.isLegend ? 'Max 1 Run' : '★ Stackable')}</span>
-          </div>
-        `;
-
-        cardEl.onclick = () => onCardClicked(idx);
-        handEl.appendChild(cardEl);
-      });
-    }
-
-    function onCardClicked(idx) {
-      if (selectedCardHandIdx === idx) {
-        selectedCardHandIdx = null;
-        updateInspectorDefault();
-      } else {
-        selectedCardHandIdx = idx;
-        const cardKey = hand[idx];
-        const card = CARDS.find(c => c.id === cardKey);
-        updateInspectorCard(card);
-      }
-      renderHand();
-      renderBoard();
-    }
-
-    function isValidPlacement(cardDef, r, c, currentBuilding, idx) {
-      if (!cardDef) return false;
-      // Cannot place on Sea, Port, or Royal Seat at [2, 2]
-      if (c === 0 || idx === 12) return false;
-      // Cannot place on submerged tile
-      if (submergedTileIdx === idx) return false;
-
-      // Stacking check: Same building and less than max stars (★3)
-      if (currentBuilding) {
-        if (cardDef.isLegend) return false; // Legends cannot be stacked
-        return (currentBuilding.id === cardDef.id && currentBuilding.level < 3);
+    /* Bribe Modal Logic */
+    function promptBribe(threat, playerDef) {
+      const isChengHoActive = gameState.legendaryDrafted === 'cheng_ho';
+      let bribeCost = Math.max(4, Math.floor(threat * 1.8));
+      if (isChengHoActive) {
+        bribeCost = Math.max(2, Math.floor(bribeCost * 0.5));
       }
 
-      // Zone rules
-      if (cardDef.zone === 'Coast' && c !== 1) return false;
-      if (cardDef.zone === 'Inland' && (c < 2 || c > 4)) return false;
-
-      return true;
-    }
-
-    function onTileClicked(idx) {
-      const r = Math.floor(idx / 5);
-      const c = idx % 5;
-      const existing = board[idx];
-
-      // Inspect tile if no card selected
-      if (selectedCardHandIdx === null) {
-        updateInspectorTile(r, c, existing, idx);
-        return;
-      }
-
-      // Placement Mode
-      const cardKey = hand[selectedCardHandIdx];
-      const cardDef = CARDS.find(item => item.id === cardKey);
-
-      if (c === 0) {
-        showToast("⚠️ Construction barred in sea lanes and grand piers!");
-        return;
-      }
-      if (idx === 12) {
-        showToast("⚠️ Royal District reserved for Balai Penghulu & Istana Melaka!");
-        return;
-      }
-      if (submergedTileIdx === idx) {
-        showToast("🌊 Tile is submerged by monsoon flood waters! Inaccessible.");
-        return;
-      }
-
-      // Check Gold
-      if (gold < cardDef.cost) {
-        showToast("❌ Insufficient treasury gold to construct!");
-        return;
-      }
-
-      // Stacking / Upgrade Logic
-      if (existing) {
-        if (cardDef.isLegend) {
-          showToast("⚠️ Legendary cards require their own dedicated vacant tile!");
-          return;
-        }
-        if (existing.id === cardDef.id) {
-          if (existing.level >= 3) {
-            showToast("⚠️ Structure has attained maximum tier (★3)!");
-            return;
-          }
-          gold -= cardDef.cost;
-          existing.level += 1;
-          if (existing.durability !== undefined) {
-            existing.durability = (cardDef.durability || 4); // Durability refreshed on upgrade
-          }
-          hand.splice(selectedCardHandIdx, 1);
-          selectedCardHandIdx = null;
-          showToast(`✨ ${existing.name} upgraded to ★${existing.level}!`);
-          addLog(`<b>Upgrade Success:</b> ${existing.name} upgraded to ★${existing.level}!`);
-          renderBoard();
-          renderHand();
-          updateHUD();
-          return;
-        } else {
-          showToast("⚠️ Tile occupied by another existing structure!");
-          return;
-        }
-      }
-
-      // Check Zone Compliance
-      if (cardDef.zone === 'Coast' && c !== 1) {
-        showToast("⚠️ Coastal blueprints must be erected on the Coast (Column 1)!");
-        return;
-      }
-      if (cardDef.zone === 'Inland' && (c < 2 || c > 4)) {
-        showToast("⚠️ Inland structures must be built on interior land (Columns 2–4)!");
-        return;
-      }
-
-      // Check Legendary Lockout (1 per run)
-      if (cardDef.isLegend) {
-        if (draftedLegendary) {
-          showToast("⚠️ You may only draft 1 Legendary Historical Figure per tenure!");
-          return;
-        }
-        draftedLegendary = true;
-        if (cardDef.id === 'sultan_muzaffar') {
-          reputation += 5;
-          if (reputation > peakReputation) peakReputation = reputation;
-          addLog("👑 <b>Coronation Boon:</b> Sultan Muzaffar Shah brings +5 instant Reputation!");
-        }
-      }
-
-      // Erect New Structure
-      gold -= cardDef.cost;
-      board[idx] = {
-        ...cardDef,
-        level: 1,
-        durability: cardDef.durability ? cardDef.durability : undefined
-      };
-
-      hand.splice(selectedCardHandIdx, 1);
-      selectedCardHandIdx = null;
-      showToast(`🔨 ${cardDef.name} established at [${r}, ${c}]!`);
-      addLog(`<b>Construction Completed:</b> ${cardDef.name} built at [${r}, ${c}].`);
-
-      renderBoard();
-      renderHand();
-      updateHUD();
-      updateInspectorTile(r, c, board[idx], idx);
-    }
-
-    // --------------------------------------------------------------------------
-    // G. PAID DRAFT REROLL
-    // --------------------------------------------------------------------------
-    function rerollHandDraft() {
-      if (!gameActive || isPaused) return;
-
-      const rerollCost = 2;
-      if (gold < rerollCost) {
-        showToast("❌ Need 2 Gold to summon new blueprints!");
-        return;
-      }
-
-      gold -= rerollCost;
-      selectedCardHandIdx = null;
-      dealFreshDraftHand();
-      showToast("🔄 Draft Refreshed! (-2 Gold)");
-      addLog("🔄 <b>Draft Rerolled:</b> Syahbandar dispatched couriers for fresh architectural plans (-2 Gold).");
-      renderHand();
-      updateHUD();
-      updateInspectorDefault();
-    }
-
-    function dealFreshDraftHand() {
-      // Standard card pool
-      const standardPool = ['kampung_nelayan', 'gudang_rempah', 'menara_pemanah', 'kontrak_pendekar', 'rumah_tumpangan'];
-      const legendPool = ['hang_tuah', 'cheng_ho', 'sultan_muzaffar'];
-
-      hand = [];
-      for (let i = 0; i < 4; i++) {
-        // 12% chance to offer an S-Tier Legendary if player hasn't drafted one yet
-        if (!draftedLegendary && Math.random() < 0.12 && !hand.some(k => legendPool.includes(k))) {
-          const randomLegend = legendPool[Math.floor(Math.random() * legendPool.length)];
-          hand.push(randomLegend);
-        } else {
-          const randomCard = standardPool[Math.floor(Math.random() * standardPool.length)];
-          hand.push(randomCard);
-        }
-      }
-    }
-
-    // --------------------------------------------------------------------------
-    // H. INSPECTOR PANEL & ACTIONS (DEMOLISH, REPAIR, ISTANA)
-    // --------------------------------------------------------------------------
-    function updateInspectorDefault() {
-      document.getElementById('insp-icon').innerText = '⚓';
-      document.getElementById('insp-title').innerText = 'Grand Pier Port';
-      document.getElementById('insp-sub').innerText = 'Fixed Anchor Dock [2, 0]';
-      document.getElementById('insp-desc').innerText = 'The sovereign timber pier of the Melaka Sultanate. All foreign merchant vessels berth here to pay customs duties and discharge spice cargo.';
-      document.getElementById('insp-meta').innerHTML = `<span class="meta-badge">Capacity: 1 Vessel</span><span class="meta-badge">Status: Clear</span>`;
-      document.getElementById('insp-actions').innerHTML = '';
-    }
-
-    function updateInspectorCard(card) {
-      document.getElementById('insp-icon').innerText = card.icon;
-      document.getElementById('insp-title').innerText = card.name;
-      document.getElementById('insp-sub').innerText = `Blueprint • Cost: ${card.cost} Gold`;
-      document.getElementById('insp-desc').innerText = card.desc;
-
-      let buruhPill = '';
-      if (card.id === 'kampung_nelayan') {
-        buruhPill = `<span class="meta-badge workforce-gen">👥 Generates: +2 Labor / ★</span>`;
-      } else if (card.id === 'kontrak_pendekar' || card.isLegend) {
-        buruhPill = `<span class="meta-badge">⚔️ Zero Labor</span>`;
-      } else if (card.workforceReq > 0) {
-        buruhPill = `<span class="meta-badge workforce">👷‍♂️ Requires: ${card.workforceReq} Labor / ★</span>`;
-      }
-
-      document.getElementById('insp-meta').innerHTML = `
-        <span class="meta-badge">Category: ${card.type}</span>
-        <span class="meta-badge">Zone: ${card.zone}</span>
-        ${buruhPill}
-        ${card.durability ? `<span class="meta-badge">Lifespan: ${card.durability} Seasons</span>` : ''}
-      `;
-      document.getElementById('insp-actions').innerHTML = '';
-    }
-
-    function updateInspectorTile(r, c, b, idx) {
-      const actionsEl = document.getElementById('insp-actions');
-      actionsEl.innerHTML = '';
-
-      if (c === 0 && r === 2) {
-        updateInspectorDefault();
-        return;
-      }
-      if (c === 0 && r === 4 && hasSecondPort) {
-        document.getElementById('insp-icon').innerText = '⚓';
-        document.getElementById('insp-title').innerText = 'Dermaga Selatan (2nd Port)';
-        document.getElementById('insp-sub').innerText = 'Royal Expansion Dock [4, 0]';
-        document.getElementById('insp-desc').innerText = 'Southern harbor pier commissioned following the rise of the Istana Melaka. Welcomes a second merchant convoy each season.';
-        document.getElementById('insp-meta').innerHTML = `<span class="meta-badge royal">Royal Commission</span><span class="meta-badge">Doubles Trade</span>`;
-        return;
-      }
-      if (c === 0) {
-        document.getElementById('insp-icon').innerText = '🌊';
-        document.getElementById('insp-title').innerText = 'Strait of Melaka';
-        document.getElementById('insp-sub').innerText = `Sea Lane [${r}, ${c}]`;
-        document.getElementById('insp-desc').innerText = 'Deep maritime shipping channel. Foreign merchant convoys and pirate flotillas traverse these waters.';
-        document.getElementById('insp-meta').innerHTML = `<span class="meta-badge">Deep Ocean</span>`;
-        return;
-      }
-
-      // Civic Seat at [2, 2]
-      if (idx === 12) {
-        const metrics = calculateMetrics();
-        const availableLabor = metrics.pop - metrics.workforceNeeded;
-        const canRepair = portHp < 3 && gold >= 15 && availableLabor >= 1;
-
-        if (!hasIstana) {
-          document.getElementById('insp-icon').innerText = '🏛️';
-          document.getElementById('insp-title').innerText = 'Balai Penghulu';
-          document.getElementById('insp-sub').innerText = 'Civic Town Hall [2, 2]';
-          document.getElementById('insp-desc').innerText = 'The civic core of the settlement. Oversees labor coordination and port maintenance. Upgradeable to the sovereign Istana Melaka.';
-          
-          document.getElementById('insp-meta').innerHTML = `
-            <span class="meta-badge royal">Civic Center</span>
-            <span class="meta-badge">Health: ${portHp}/3 HP</span>
-          `;
-
-          const repTier = Math.floor(reputation / 6) + 1;
-          const canUpgradeIstana = (gold >= 45 && metrics.pop >= 8 && repTier >= 3);
-
-          actionsEl.innerHTML = `
-            <button class="btn-insp-action" ${canRepair ? '' : 'disabled'} onclick="performPortRepair()">
-              🔨 Repair Port (15 Gold + 1 Labor)
-            </button>
-            <button class="btn-insp-action btn-insp-istana" ${canUpgradeIstana ? '' : 'disabled'} onclick="performIstanaUpgrade()">
-              👑 Upgrade to Istana (45 Gold, 8 Pop, Tier 3)
-            </button>
-          `;
-        } else {
-          document.getElementById('insp-icon').innerText = '👑';
-          document.getElementById('insp-title').innerText = 'Istana Melaka';
-          document.getElementById('insp-sub').innerText = 'Sovereign Royal Seat [2, 2]';
-          document.getElementById('insp-desc').innerText = 'The golden palace of the Sultan. Hosts Dermaga Selatan, doubles trade fleets, and paves the way for the Imperial Ming Fleet at Tier 5!';
-          
-          document.getElementById('insp-meta').innerHTML = `
-            <span class="meta-badge royal">Royal Palace</span>
-            <span class="meta-badge">Supplies +4 Retainers</span>
-            <span class="meta-badge">+3 Passive Gold</span>
-          `;
-
-          actionsEl.innerHTML = `
-            <button class="btn-insp-action" ${canRepair ? '' : 'disabled'} onclick="performPortRepair()">
-              🔨 Repair Port (15 Gold + 1 Labor)
-            </button>
-          `;
-        }
-        return;
-      }
-
-      if (!b) {
-        document.getElementById('insp-icon').innerText = c === 1 ? '🏖️' : '🌿';
-        document.getElementById('insp-title').innerText = c === 1 ? 'Coastal Sands' : 'Open Inland Field';
-        document.getElementById('insp-sub').innerText = `Coords [${r}, ${c}] • Vacant`;
-        document.getElementById('insp-desc').innerText = c === 1 
-          ? 'Sandy coastline. Prime tactical zone to erect an Archer Watchtower.' 
-          : 'Fertile land district. Suitable for Spice Warehouses, Inns, or settlements.';
-        document.getElementById('insp-meta').innerHTML = `<span class="meta-badge">Empty Slot</span>`;
-        return;
-      }
-
-      document.getElementById('insp-icon').innerText = b.icon;
-      document.getElementById('insp-title').innerText = `${b.name} ★${b.level}`;
-      document.getElementById('insp-sub').innerText = `Coords: [${r}, ${c}] • Biome: ${c === 1 ? 'Coast' : 'Inland'}`;
-      document.getElementById('insp-desc').innerText = b.desc;
-
-      const star = b.level || 1;
-      let buruhPill = '';
-      if (b.id === 'kampung_nelayan') {
-        buruhPill = `<span class="meta-badge workforce-gen">👥 Supplies: +${2 * star} Labor</span>`;
-      } else if (b.id === 'kontrak_pendekar' || b.isLegend) {
-        buruhPill = `<span class="meta-badge">⚔️ Zero Labor</span>`;
-      } else if (b.workforceReq > 0) {
-        const req = b.workforceReq * star;
-        const metrics = calculateMetrics();
-        const isDeficit = metrics.workforceNeeded > metrics.pop;
-        buruhPill = `<span class="meta-badge workforce ${isDeficit ? 'warning' : ''}">👷‍♂️ Manning: ${req} Labor ${isDeficit ? '(Shortage!)' : ''}</span>`;
-      }
-
-      document.getElementById('insp-meta').innerHTML = `
-        <span class="meta-badge">Level: ★${b.level}</span>
-        ${buruhPill}
-        ${b.durability !== undefined ? `<span class="meta-badge">Lifespan: ${b.durability} Seasons</span>` : '<span class="meta-badge">Permanent</span>'}
+      document.getElementById('bribe-modal-body').innerHTML = `
+        Raiders have overwhelmed the coastal guard! (Threat: ${threat} vs Your DEF: ${playerDef}).<br><br>
+        <strong>Pay Tribute:</strong> ${bribeCost} Gold to allow trade ships to safely dock (0 Rep gained).<br>
+        <strong>Refuse:</strong> City takes -1 HP breach damage and cargo is looted!
       `;
 
-      // Demolish Action
-      actionsEl.innerHTML = `
-        <button class="btn-insp-action btn-insp-demolish" onclick="demolishBuilding(${idx})">
-          💥 Demolish (1 Gold)
-        </button>
-      `;
-    }
-
-    function demolishBuilding(idx) {
-      if (gold < 1) {
-        showToast("❌ Demolition costs 1 Gold for workers and salvage!");
-        return;
-      }
-      gold -= 1;
-      const bName = board[idx].name;
-      board[idx] = null;
-      showToast(`💥 Demolished ${bName}! Tile cleared.`);
-      addLog(`💥 <b>Demolition:</b> ${bName} cleared at [${Math.floor(idx/5)}, ${idx%5}] (-1 Gold).`);
-      renderBoard();
-      updateHUD();
-      updateInspectorDefault();
-    }
-
-    function performPortRepair() {
-      const metrics = calculateMetrics();
-      const availableLabor = metrics.pop - metrics.workforceNeeded;
-
-      if (portHp >= 3) {
-        showToast("⚠️ Port defenses and pier are already in pristine condition!");
-        return;
-      }
-      if (gold < 15) {
-        showToast("❌ Need 15 Gold in treasury to commission port stonework!");
-        return;
-      }
-      if (availableLabor < 1) {
-        showToast("❌ Need at least 1 free Laborer to execute emergency repairs!");
-        return;
-      }
-
-      gold -= 15;
-      portHp = Math.min(3, portHp + 1);
-      showToast("🛡️ Port Repaired! +1 City Health restored!");
-      addLog("🔨 <b>Emergency Repairs:</b> Stonemasons and carpenters restored +1 City Health (15 Gold spent).");
-
-      updateHUD();
-      updateInspectorTile(2, 2, board[12], 12);
-    }
-
-    function performIstanaUpgrade() {
-      const metrics = calculateMetrics();
-      const repTier = Math.floor(reputation / 6) + 1;
-
-      if (gold < 45 || metrics.pop < 8 || repTier < 3) {
-        showToast("⚠️ Requirements: 45 Gold, 8 Citizens, and Tier 3 Reputation!");
-        return;
-      }
-
-      gold -= 45;
-      hasIstana = true;
-      hasSecondPort = true;
-
-      board[12] = {
-        id: 'istana_melaka',
-        name: 'Istana Melaka',
-        type: 'Sovereign Seat',
-        cost: 45,
-        workforceReq: 0,
-        capacityVal: 0,
-        zone: 'Royal',
-        icon: '👑',
-        level: 1,
-        desc: 'Sovereign Royal Palace. Hosts royal retainers, opens Dermaga Selatan, and welcomes double merchant convoys.'
-      };
-
-      // Fully heal port on palace consecration
-      portHp = 3;
-
-      showToast("👑 ISTANA MELAKA ERECTED! Dermaga Selatan is open!");
-      addLog("👑 <b>Royal Consecration:</b> Istana Melaka erected at [2, 2]! Southern Pier at [4, 0] is operational. Merchant traffic doubled!");
-
-      renderBoard();
-      updateHUD();
-      updateHorizonVessel();
-      updateInspectorTile(2, 2, board[12], 12);
-    }
-
-    // --------------------------------------------------------------------------
-    // I. MARITIME HORIZON UPDATES (PANEL 5)
-    // --------------------------------------------------------------------------
-    function updateHorizonVessel() {
-      const vesselEl = document.getElementById('hz-vessel-name');
-      const cargoEl = document.getElementById('hz-cargo-tag');
-      const threatEl = document.getElementById('hz-threat-pill');
-      const vesselIcon = document.getElementById('hz-vessel-icon');
-      const vesselIcon2 = document.getElementById('hz-vessel-icon-2');
-      const pirateIcon = document.getElementById('hz-pirate-icon');
-
-      if (hasSecondPort) {
-        vesselIcon2.style.display = 'block';
-      } else {
-        vesselIcon2.style.display = 'none';
-      }
-
-      if (isBossIncursion) {
-        vesselEl.innerText = hasSecondPort ? 'Dual Convoys Under Siege' : 'Royal Fleet Awaiting Safe Dock';
-        cargoEl.innerText = 'Merchants in panic! Awaiting Syahbandar protection.';
-        threatEl.innerText = 'P. HITAM (10 DEF)';
-        vesselIcon.innerText = '⛵';
-        pirateIcon.innerText = '🏴‍☠️';
-      } else {
-        const totalThreat = hasSecondPort ? currentVessel.threat + 3 : currentVessel.threat;
-        vesselEl.innerText = hasSecondPort ? `${currentVessel.name} & Southern Convoy` : currentVessel.name;
-        cargoEl.innerText = `Origin: ${currentVessel.origin} • Tariff: +${hasSecondPort ? currentVessel.tariff * 2 : currentVessel.tariff} Gold`;
-        threatEl.innerText = `${currentVessel.threatName} (${totalThreat} DEF)`;
-        vesselIcon.innerText = currentVessel.icon;
-        pirateIcon.innerText = '☠️';
-      }
-    }
-
-    // --------------------------------------------------------------------------
-    // J. RESOLUTION ENGINE (COMBAT, BRIBE, CATASTROPHES, & VICTORY)
-    // --------------------------------------------------------------------------
-    function triggerDockInspection() {
-      if (!gameActive || isPaused) return;
-
-      clearInterval(timerInterval);
-      addLog(`--- 📯 <b>RESOLUTION OF SEASON ${season} COMMENCES</b> ---`);
-
-      // Clear previous monsoon flood
-      if (submergedTileIdx !== null) {
-        submergedTileIdx = null;
-        addLog("☀️ <b>Waters Recede:</b> Coastal floodwaters subside. Land is usable once more.");
-      }
-
-      // Check Unemployment & Thieves
-      const metrics = calculateMetrics();
-      const idlePop = metrics.pop - metrics.workforceNeeded;
-      if (idlePop >= 4) {
-        unemployedSeasonCount++;
-        if (unemployedSeasonCount >= 2) {
-          const stolenGold = Math.min(gold, 3);
-          gold -= stolenGold;
-          reputation = Math.max(0, reputation - 1);
-          showToast(`🦹 Outlaws raid bazaars! -${stolenGold} Gold, -1 Rep!`);
-          addLog(`🦹 <b>Civil Unrest:</b> High unemployment bred outlaws! Thieves pillaged -${stolenGold} Gold and -1 Reputation.`);
-        }
-      } else {
-        unemployedSeasonCount = 0;
-      }
-
-      // Roll Seasonal Catastrophe (15% chance from season 3 onwards)
-      if (season >= 3 && Math.random() < 0.15) {
-        triggerCatastrophe();
-      }
-
-      // Combat resolution check
-      const baseThreat = isBossIncursion ? 10 : currentVessel.threat;
-      const requiredThreat = hasSecondPort && !isBossIncursion ? baseThreat + 3 : baseThreat;
-
-      if (metrics.def >= requiredThreat) {
-        resolveCombatSuccess();
-      } else {
-        promptBribeModal(requiredThreat);
-      }
-    }
-
-    function triggerCatastrophe() {
-      if (Math.random() < 0.5) {
-        // Cholera Outbreak
-        const villageIdx = board.findIndex(b => b && b.id === 'kampung_nelayan');
-        if (villageIdx !== -1) {
-          board[villageIdx].level = Math.max(1, board[villageIdx].level - 1);
-          showToast("☣️ Cholera Outbreak (Wabak Taun)! Citizens lost.");
-          addLog("☣️ <b>Wabak Taun:</b> A cholera outbreak swept the settlements. Laborers succumbed, degrading a village star!");
-        }
-      } else {
-        // Monsoon Surge (submerges a coastal tile in Col 1)
-        const coastalIndices = [1, 6, 11, 16, 21];
-        const randomCoast = coastalIndices[Math.floor(Math.random() * coastalIndices.length)];
-        submergedTileIdx = randomCoast;
-        if (board[randomCoast]) {
-          addLog(`🌊 <b>Monsoon Surge:</b> High tides submerged [${Math.floor(randomCoast/5)}, 1]! Structure washed away.`);
-          board[randomCoast] = null;
-        } else {
-          addLog(`🌊 <b>Monsoon Surge:</b> High coastal waves inundated tile [${Math.floor(randomCoast/5)}, 1] for 1 season!`);
-        }
-        showToast("🌊 Monsoon surge flood submerged coastal land!");
-      }
-    }
-
-    function promptBribeModal(threatVal) {
-      const bribeCost = isBossIncursion ? 18 : Math.max(5, Math.floor(threatVal * 1.5));
-      pendingBribeResolution = { threatVal, bribeCost };
-
-      document.getElementById('bribe-cost-display').innerText = `${bribeCost} Gold`;
-      document.getElementById('bribe-treasury-display').innerText = `${gold} Gold`;
-
-      const payBtn = document.getElementById('btn-pay-bribe');
-      if (gold < bribeCost) {
-        payBtn.disabled = true;
-        payBtn.innerText = `❌ Cannot Afford Tribute (${bribeCost} Gold)`;
-      } else {
-        payBtn.disabled = false;
-        payBtn.innerText = `🪙 Pay Tribute (${bribeCost} Gold) & Protect HP`;
-      }
+      const btnPay = document.getElementById('btn-pay-bribe');
+      btnPay.innerText = `Pay Tribute (${bribeCost} Gold)`;
+      btnPay.disabled = (gameState.gold < bribeCost);
+      btnPay.onclick = () => executePayBribe(bribeCost);
 
       document.getElementById('bribe-modal').classList.add('active');
     }
 
-    function resolveBribeChoice(didPay) {
+    function executePayBribe(cost) {
+      gameState.gold -= cost;
       document.getElementById('bribe-modal').classList.remove('active');
-      const { bribeCost } = pendingBribeResolution;
-
-      if (didPay && gold >= bribeCost) {
-        gold -= bribeCost;
-        addLog(`🪙 <b>Ufti Damai Paid:</b> Disbursed ${bribeCost} Gold in tribute. Raiders withdrew peacefully. Port HP preserved!`);
-        showToast(`💰 Tribute accepted! Raiders leave peacefully.`);
-
-        let earnedTariff = currentVessel.tariff;
-        if (hasSecondPort) earnedTariff *= 2;
-
-        gold += earnedTariff;
-        totalGoldEarned += earnedTariff;
-        addLog(`💰 <b>Trade Unloaded:</b> Merchants berthed (+${earnedTariff} Gold, 0 Reputation gained).`);
-      } else {
-        resolveCombatBreach();
-      }
-
-      concludeSeasonTurn();
+      logChronicle(`🤝 Paid ${cost} Gold tribute to raiders. Ships docked peacefully, but no reputation gained.`, 'alert');
+      collectTradeCargo(false);
+      finishSeasonResolution();
     }
 
-    function resolveCombatSuccess() {
-      addLog(`🛡️ <b>Coastal Victory:</b> Raider intercept repelled! Fleets dock safely.`);
-      
-      let earnedTariff = currentVessel.tariff;
-      let totalDemand = currentVessel.demand;
-      let repGain = currentVessel.repGain;
-
-      if (hasSecondPort) {
-        earnedTariff *= 2;
-        totalDemand *= 2;
-        repGain += 1;
+    function refuseBribe() {
+      document.getElementById('bribe-modal').classList.remove('active');
+      gameState.cityHp--;
+      logChronicle(`💥 Harbor breached! Melaka took -1 HP damage. Merchant cargo plundered.`, 'alert');
+      if (gameState.cityHp <= 0) {
+        triggerGameOver('Defense crumbled under pirate siege. The city has fallen.');
+        return;
       }
-
-      const metrics = calculateMetrics();
-      if (metrics.capacity < totalDemand) {
-        earnedTariff = Math.floor(earnedTariff * 0.5);
-        addLog(`⚠️ <b>Cargo Bottleneck:</b> Warehouses lack capacity for ${totalDemand} cargo. Tariff halved to ${earnedTariff} Gold.`);
-      } else {
-        const warehouseBonus = board.filter(b => b && b.id === 'gudang_rempah').length * 2;
-        earnedTariff += warehouseBonus;
-      }
-
-      gold += earnedTariff;
-      totalGoldEarned += earnedTariff;
-      reputation += repGain;
-      if (reputation > peakReputation) peakReputation = reputation;
-
-      addLog(`💰 <b>Customs Cleared:</b> +${earnedTariff} Gold, +${repGain} Reputation.`);
-      showToast(`🎉 Vessel berthed safely! +${earnedTariff} Gold, +${repGain}★`);
-
-      checkTierAdvancement();
-      checkVictoryCondition();
-      concludeSeasonTurn();
+      finishSeasonResolution();
     }
 
-    function resolveCombatBreach() {
-      portHp -= 1;
-      addLog(`💥 <b>PIRATE BREACH!</b> Merchant fleet plundered. Customs duties lost, Grand Pier damaged (-1 HP).`);
-      showToast("☠️ Marauders plundered cargo! -1 City Health!");
+    /* Trade & Tariff Collection */
+    function collectTradeCargo(gainRep) {
+      const storage = calculateWarehouseStorage();
+      const demand = gameState.hasSecondPort ? 6 : 3;
+      let tariff = gameState.hasSecondPort ? 8 : 4;
 
-      const villageIdx = board.findIndex(b => b && b.id === 'kampung_nelayan');
-      if (villageIdx !== -1) {
-        board[villageIdx].level = Math.max(1, board[villageIdx].level - 1);
-        addLog("💔 <b>Civilian Casualties:</b> Coastal village attacked. Laborers lost.");
+      if (storage < demand) {
+        tariff = Math.floor(tariff * 0.5);
+        logChronicle(`⚠️ Dock congestion: Insufficient warehouse storage (${storage}/${demand}). Tariffs reduced to +${tariff} Gold.`);
+      } else {
+        logChronicle(`💰 Merchant fleets safely unloaded. Collected +${tariff} Gold in royal tariffs.`, 'success');
       }
 
-      if (isBossIncursion) {
-        const towerIdx = board.findIndex(b => b && b.id === 'menara_pemanah');
-        if (towerIdx !== -1) {
-          board[towerIdx] = null;
-          addLog("💣 <b>Panglima Hitam's Culverins:</b> An Archer Watchtower was blasted into rubble!");
+      gameState.gold += tariff;
+
+      // Passive income from Inns
+      let innsCount = 0;
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
+          if (gameState.board[r][c]?.id === 'inn') innsCount += gameState.board[r][c].stars;
         }
       }
-    }
+      if (innsCount > 0) {
+        gameState.gold += innsCount;
+        logChronicle(`🏮 Merchant Inns brought +${innsCount} Gold.`);
+      }
 
-    function checkTierAdvancement() {
-      const newTier = Math.floor(reputation / 6) + 1;
-      if (newTier > currentTier) {
-        currentTier = newTier;
-        if (portHp < 3) {
-          portHp = Math.min(3, portHp + 1);
-          showToast(`🌟 Promoted to Tier ${currentTier}! +1 City Health restored!`);
-          addLog(`🎉 <b>Tier Advancement:</b> Attained Reputation Tier ${currentTier}! Sultan awards royal engineers to restore +1 City Health (HP: ${portHp}/3).`);
-        } else {
-          showToast(`🌟 Promoted to Reputation Tier ${currentTier}!`);
-          addLog(`🎉 <b>Tier Advancement:</b> Attained Reputation Tier ${currentTier}! Melaka's entrepôt expands.`);
-        }
+      // Cheng Ho Passive
+      if (gameState.legendaryDrafted === 'cheng_ho') {
+        gameState.gold += 4;
+        logChronicle(`🐉 Laksamana Cheng Ho secured +4 Gold imperial tribute.`);
+      }
+
+      if (gainRep) {
+        addReputation(1);
       }
     }
 
-    function checkVictoryCondition() {
-      const repTier = Math.floor(reputation / 6) + 1;
-      if (hasIstana && repTier >= 5) {
+    /* Advance Season & Handle Catastrophes */
+    function finishSeasonResolution() {
+      decayStructures();
+
+      // Check Unemployment & Outlaws
+      const labor = calculateLabor();
+      const unemployed = Math.max(0, labor.population - labor.demand);
+      if (unemployed >= 4) {
+        gameState.idleUnemployedStreak++;
+        if (gameState.idleUnemployedStreak >= 2) {
+          gameState.gold = Math.max(0, gameState.gold - 3);
+          logChronicle(`🗡️ Civil Unrest: Idle unemployed citizens turned to theft! Siphoned -3 Gold.`, 'alert');
+        }
+      } else {
+        gameState.idleUnemployedStreak = 0;
+      }
+
+      // Advance Season
+      gameState.season++;
+
+      // Clear Floods
+      gameState.floodedTiles = [];
+
+      // Check Campaign Milestones & Catastrophes
+      if (gameState.season === 6) {
+        // Banjir Muson
+        gameState.floodedTiles.push({ r: 2, c: 1 });
+        logChronicle(`🌊 Monsoon Surge: Coastal sector [2, 1] flooded for 1 season!`, 'alert');
+      } else if (gameState.season === 11) {
+        // Wabak Taun
+        gameState.gold = Math.max(0, gameState.gold - 4);
+        logChronicle(`☠️ Cholera Outbreak: Epidemic struck crowded districts. Paid 4 Gold for emergency herbs.`, 'alert');
+      }
+
+      // Check Act Transitions
+      if (gameState.season === 9 && gameState.act === 1) {
+        gameState.act = 2;
+        showActModal('⚜ BABAK II: ZAMAN KEEMASAN', 'Foreign guilds arrive. Build the Istana Melaka at [2, 2] to open the Southern Port.');
+      } else if (gameState.season === 17 && gameState.act === 2) {
+        gameState.act = 3;
+        showActModal('⚜ BABAK III: ARMADA LAKSAMANA', 'Coordinated war fleets patrol the waters. Defend the realm until the Ming Treasure Fleet arrives at Season 24!');
+      }
+
+      // Victory Condition: Season 24 Complete
+      if (gameState.season > GAME_CONFIG.MAX_SEASONS) {
         triggerVictory();
-      }
-    }
-
-    function triggerVictory() {
-      clearInterval(timerInterval);
-      gameActive = false;
-
-      document.getElementById('vic-season').innerText = season;
-      document.getElementById('vic-rep').innerText = `Tier 5 (${reputation}★)`;
-      document.getElementById('vic-gold').innerText = `${totalGoldEarned} Gold`;
-
-      saveScore(season, reputation, totalGoldEarned);
-      document.getElementById('victory-modal').classList.add('active');
-    }
-
-    function concludeSeasonTurn() {
-      const metrics = calculateMetrics();
-
-      // Passive income
-      if (metrics.passiveGold > 0) {
-        gold += metrics.passiveGold;
-        totalGoldEarned += metrics.passiveGold;
-        addLog(`🌾 <b>Maritime Sustenance:</b> Settlements provide +${metrics.passiveGold} passive Gold.`);
-      }
-
-      // Durability decay
-      board.forEach((b, idx) => {
-        if (b && b.durability !== undefined) {
-          b.durability -= 1;
-          if (b.durability <= 0) {
-            addLog(`⌛ <b>Expired:</b> ${b.name} at [${Math.floor(idx/5)}, ${idx%5}] has collapsed.`);
-            board[idx] = null;
-          }
-        }
-      });
-
-      // Defeat check
-      if (portHp <= 0) {
-        triggerGameOver("The port defenses have crumbled under unrelenting pirate attacks. Melaka has lost naval control!");
         return;
       }
 
-      // Next season setup
-      season++;
-      timeLeft = seasonDuration;
-      selectedCardHandIdx = null;
+      // Reset for next day
+      dealFreshDraft();
+      renderBoard();
+      updateHUD();
+      updateHorizon();
+      startDayCycle();
+    }
 
-      // Automatic seasonal draft deal
-      dealFreshDraftHand();
-      addLog("📜 <b>New Season Draft:</b> Fresh trade directives and architectural blueprints arrived at the harbor dock.");
+    /* Decay Structures */
+    function decayStructures() {
+      const isTuahActive = (gameState.legendaryDrafted === 'hang_tuah');
 
-      // Ship scaling
-      const repTier = Math.min(3, Math.floor(reputation / 6));
-      currentVessel = TRADE_VESSELS[repTier];
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
+          const item = gameState.board[r][c];
+          if (!item || item.durability === Infinity) continue;
 
-      // Boss trigger every 4 seasons
-      if (season % 4 === 0) {
-        isBossIncursion = true;
-        document.getElementById('boss-event-modal').classList.add('active');
-      } else {
-        isBossIncursion = false;
+          // Hang Tuah makes watchtowers immune to decay
+          if (item.id === 'tower' && isTuahActive) continue;
+
+          item.durability--;
+          if (item.durability <= 0) {
+            logChronicle(`🏚️ Expired: ${item.name} at [${r}, ${c}] collapsed.`);
+            gameState.board[r][c] = null;
+          }
+        }
+      }
+    }
+
+    /* Board Tile Actions & Building */
+    function onTileClick(r, c) {
+      gameState.selectedTileCoord = { r, c };
+      const tile = gameState.board[r][c];
+
+      // If a card is selected from dock, attempt placement or stacking
+      if (gameState.selectedCardId) {
+        attemptCardPlacement(r, c);
+        return;
       }
 
+      renderInspectorTile(r, c);
       renderBoard();
-      renderHand();
+    }
+
+    function attemptCardPlacement(r, c) {
+      const card = gameState.draftHand.find(cd => cd.uniqueId === gameState.selectedCardId);
+      if (!card) return;
+
+      // Check flood
+      if (gameState.floodedTiles.some(t => t.r === r && t.c === c)) {
+        logChronicle(`❌ Cannot build on flooded land!`, 'alert');
+        return;
+      }
+
+      // Check zone rules
+      if (c === 0) {
+        logChronicle(`❌ Cannot build directly in deep maritime sea lane.`, 'alert');
+        return;
+      }
+      if (card.zone === 'coast' && c !== 1) {
+        logChronicle(`❌ Watchtowers must be constructed on the Coast (Column 1).`, 'alert');
+        return;
+      }
+      if (card.zone === 'land' && c <= 1) {
+        logChronicle(`❌ This building must be erected on Inland soil (Columns 2-4).`, 'alert');
+        return;
+      }
+
+      // Affordability
+      if (gameState.gold < card.cost) {
+        logChronicle(`❌ Insufficient gold (${card.cost} Gold needed).`, 'alert');
+        return;
+      }
+
+      const existing = gameState.board[r][c];
+
+      // Stacking Upgrade
+      if (existing && existing.id === card.id) {
+        if (existing.stars >= 3) {
+          logChronicle(`❌ Maximum Star rating (★3) already reached for this building.`, 'alert');
+          return;
+        }
+        gameState.gold -= card.cost;
+        existing.stars++;
+        existing.durability = Math.max(existing.durability, card.id === 'tower' ? 4 : 3);
+        logChronicle(`⭐ Upgraded ${existing.name} to ★${existing.stars} at [${r}, ${c}]!`, 'success');
+        consumeCard(card.uniqueId);
+        renderBoard();
+        updateHUD();
+        renderInspectorTile(r, c);
+        return;
+      }
+
+      // Empty tile placement
+      if (!existing) {
+        gameState.gold -= card.cost;
+
+        if (card.type === 'Legendary') {
+          gameState.legendaryDrafted = card.id;
+          if (card.id === 'muzaffar_shah') {
+            addReputation(5);
+            logChronicle(`⚜️ Sultan Muzaffar Shah bestowed +5 Reputation and slashed Istana costs!`, 'success');
+          }
+        }
+
+        gameState.board[r][c] = {
+          id: card.id,
+          name: card.name,
+          icon: card.icon,
+          stars: 1,
+          type: card.type,
+          durability: card.id === 'tower' ? 4 : (card.id === 'mercenary' ? 2 : Infinity),
+          laborNeed: card.laborNeed,
+          desc: card.desc
+        };
+
+        logChronicle(`🔨 Constructed ${card.name} at [${r}, ${c}].`, 'success');
+        consumeCard(card.uniqueId);
+        renderBoard();
+        updateHUD();
+        renderInspectorTile(r, c);
+      } else {
+        logChronicle(`❌ Tile occupied. Select an empty tile or matching building to upgrade.`, 'alert');
+      }
+    }
+
+    function consumeCard(uniqueId) {
+      gameState.draftHand = gameState.draftHand.filter(c => c.uniqueId !== uniqueId);
+      gameState.selectedCardId = null;
+      renderCardDock();
+    }
+
+    /* Inspect Tile Details */
+    function renderInspectorTile(r, c) {
+      const tile = gameState.board[r][c];
+      const inspectorBody = document.getElementById('inspector-body');
+      const inspectorActions = document.getElementById('inspector-actions');
+      inspectorActions.innerHTML = '';
+
+      if (!tile) {
+        const zoneName = c === 0 ? 'Deep Strait Sea Lane' : (c === 1 ? 'Sandy Coastline' : 'Inland Territory');
+        inspectorBody.innerHTML = `
+          <strong>Vacant Territory [${r}, ${c}]</strong><br>
+          Zone: ${zoneName}<br>
+          Select a card blueprint below to construct buildings on this site.
+        `;
+        return;
+      }
+
+      const stars = '★'.repeat(tile.stars || 1);
+      const dura = tile.durability === Infinity ? 'Permanent' : `${tile.durability} Seasons`;
+
+      inspectorBody.innerHTML = `
+        <strong>${tile.name} ${stars}</strong><br>
+        <span style="font-size: 0.65rem; color: var(--gold-primary);">Coordinates: [${r}, ${c}] • Durability: ${dura}</span><br>
+        <p style="margin-top: 4px;">${tile.desc}</p>
+        <div class="inspector-badge-row" style="margin-top: 6px;">
+          <span class="badge-tag">Role: ${tile.type}</span>
+          ${tile.laborNeed > 0 ? `<span class="badge-tag badge-labor-needed">👷 Needs: ${tile.laborNeed * tile.stars} Labor</span>` : ''}
+        </div>
+      `;
+
+      // Special Actions: Istana Upgrade & Port Repair on Balai Penghulu
+      if (tile.id === 'townhall') {
+        const isMuzaffar = gameState.legendaryDrafted === 'muzaffar_shah';
+        const istanaCost = isMuzaffar ? 20 : 45;
+        const istanaPop = isMuzaffar ? 5 : 8;
+
+        if (!gameState.hasSecondPort) {
+          const btnIstana = document.createElement('button');
+          btnIstana.className = 'btn-inspector-action';
+          btnIstana.innerText = `👑 Upgrade to Istana Melaka (${istanaCost} Gold, ${istanaPop} Pop)`;
+          btnIstana.onclick = () => upgradeToIstana(istanaCost, istanaPop);
+          inspectorActions.appendChild(btnIstana);
+        }
+
+        if (gameState.cityHp < gameState.maxHp) {
+          const btnRepair = document.createElement('button');
+          btnRepair.className = 'btn-inspector-action';
+          btnRepair.innerText = `🛡️ Emergency Port Repair (+1 HP: 15 Gold)`;
+          btnRepair.onclick = () => emergencyRepairPort();
+          inspectorActions.appendChild(btnRepair);
+        }
+      } else if (tile.type !== 'Civic') {
+        // Demolish Action
+        const btnDemolish = document.createElement('button');
+        btnDemolish.className = 'btn-inspector-action btn-demolish';
+        btnDemolish.innerText = `🔨 Demolish Structure (Cost: 1 Gold)`;
+        btnDemolish.onclick = () => demolishTile(r, c);
+        inspectorActions.appendChild(btnDemolish);
+      }
+    }
+
+    function emergencyRepairPort() {
+      if (gameState.gold < 15) {
+        logChronicle(`❌ Need 15 Gold to repair city fortifications.`, 'alert');
+        return;
+      }
+      gameState.gold -= 15;
+      gameState.cityHp = Math.min(gameState.maxHp, gameState.cityHp + 1);
+      logChronicle(`🛡️ Royal engineers repaired the harbor fortifications (+1 HP)!`, 'success');
       updateHUD();
-      updateHorizonVessel();
-      startSeasonTimer();
+      renderInspectorTile(2, 2);
     }
 
-    function closeBossModal() {
-      document.getElementById('boss-event-modal').classList.remove('active');
+    function upgradeToIstana(cost, popReq) {
+      const labor = calculateLabor();
+      if (gameState.gold < cost) {
+        logChronicle(`❌ Need ${cost} Gold to upgrade to Istana Melaka.`, 'alert');
+        return;
+      }
+      if (labor.population < popReq) {
+        logChronicle(`❌ Requires at least ${popReq} Citizens to maintain royal palace.`, 'alert');
+        return;
+      }
+
+      gameState.gold -= cost;
+      gameState.hasSecondPort = true;
+      const hall = gameState.board[2][2];
+      hall.name = 'Istana Melaka';
+      hall.icon = '👑';
+      hall.desc = 'Royal Palace of the Sultan. Second southern port pier opened!';
+      logChronicle(`⚜️ Istana Melaka erected! Southern Pier unlocked at [4, 0]. Double trade fleets active!`, 'success');
+      renderBoard();
+      updateHUD();
+      renderInspectorTile(2, 2);
     }
 
-    // --------------------------------------------------------------------------
-    // K. GAMEOVER, LEADERBOARD, & TOASTS
-    // --------------------------------------------------------------------------
-    function triggerGameOver(reason) {
-      clearInterval(timerInterval);
-      gameActive = false;
-      document.getElementById('gameover-reason').innerText = reason;
-      document.getElementById('gov-season').innerText = season;
-      document.getElementById('gov-rep').innerText = `${peakReputation}★`;
-      document.getElementById('gov-gold').innerText = totalGoldEarned;
-
-      saveScore(season, peakReputation, totalGoldEarned);
-      document.getElementById('gameover-modal').classList.add('active');
+    function demolishTile(r, c) {
+      if (gameState.gold < 1) {
+        logChronicle(`❌ 1 Gold required to demolish and clear terrain.`, 'alert');
+        return;
+      }
+      gameState.gold -= 1;
+      const name = gameState.board[r][c]?.name || 'Structure';
+      gameState.board[r][c] = null;
+      logChronicle(`🔨 Demolished ${name} at [${r}, ${c}].`);
+      renderBoard();
+      updateHUD();
+      renderInspectorTile(r, c);
     }
 
-    function saveScore(s, rep, g) {
-      const existing = JSON.parse(localStorage.getItem('kota_selat_scores') || '[]');
-      existing.push({
-        season: s,
-        rep: rep,
-        gold: g,
-        date: new Date().toLocaleDateString('en-GB')
+    /* Render 5x5 Matrix */
+    function renderBoard() {
+      const grid = document.getElementById('board-grid');
+      grid.innerHTML = '';
+
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
+          const tileEl = document.createElement('div');
+          tileEl.className = 'tile';
+
+          // Assign Biome
+          if (c === 0) tileEl.classList.add('tile-sea');
+          else if (c === 1) tileEl.classList.add('tile-coast');
+          else tileEl.classList.add('tile-land');
+
+          // Flood state
+          if (gameState.floodedTiles.some(t => t.r === r && t.c === c)) {
+            tileEl.classList.add('flooded');
+          }
+
+          // Highlight target
+          if (gameState.selectedTileCoord?.r === r && gameState.selectedTileCoord?.c === c) {
+            tileEl.classList.add('selected-target');
+          }
+
+          // Anchor indicator for ports in sea lane
+          if (c === 0) {
+            if (r === 2) {
+              tileEl.innerHTML = `<span style="font-size: 1.5rem;">⚓</span><span class="tile-name" style="color:#7dd3fc;">Dermaga Utara</span>`;
+            } else if (r === 4 && gameState.hasSecondPort) {
+              tileEl.innerHTML = `<span style="font-size: 1.5rem;">⚓</span><span class="tile-name" style="color:#fde047;">Dermaga Selatan</span>`;
+            }
+          }
+
+          const item = gameState.board[r][c];
+          if (item) {
+            const stars = '★'.repeat(item.stars || 1);
+            const duraBadge = item.durability !== Infinity ? `<div class="tile-durability-pill">⏳ ${item.durability}</div>` : '';
+            tileEl.innerHTML = `
+              <div class="tile-coord">[${r},${c}]</div>
+              ${duraBadge}
+              <div class="tile-icon">${item.icon}</div>
+              <div class="tile-name">${item.name}</div>
+              <div class="tile-stars">${stars}</div>
+            `;
+          } else if (c > 0) {
+            tileEl.innerHTML = `<div class="tile-coord">[${r},${c}]</div>`;
+          }
+
+          tileEl.onclick = () => onTileClick(r, c);
+          grid.appendChild(tileEl);
+        }
+      }
+    }
+
+    /* Draft Cards Dealing */
+    function dealFreshDraft() {
+      gameState.draftHand = [];
+      const hasLegendInDraft = S_TIER_LEGENDS.some(leg => leg.id === gameState.legendaryDrafted);
+
+      for (let i = 0; i < 4; i++) {
+        // 10% chance to offer unpicked legend if none drafted yet
+        if (!hasLegendInDraft && !gameState.legendaryDrafted && Math.random() < 0.15) {
+          const randomLegend = S_TIER_LEGENDS[Math.floor(Math.random() * S_TIER_LEGENDS.length)];
+          gameState.draftHand.push({ ...randomLegend, uniqueId: 'cd_' + Math.random() });
+        } else {
+          const randCard = CARD_CATALOG[Math.floor(Math.random() * CARD_CATALOG.length)];
+          gameState.draftHand.push({ ...randCard, uniqueId: 'cd_' + Math.random() });
+        }
+      }
+      renderCardDock();
+    }
+
+    function rerollDraft() {
+      if (gameState.gold < 2) {
+        logChronicle(`❌ 2 Gold needed to refresh draft.`, 'alert');
+        return;
+      }
+      gameState.gold -= 2;
+      dealFreshDraft();
+      updateHUD();
+      logChronicle(`🔄 Syahbandar rerolled blueprints (-2 Gold).`);
+    }
+
+    function renderCardDock() {
+      const container = document.getElementById('cards-container');
+      container.innerHTML = '';
+
+      gameState.draftHand.forEach(card => {
+        const cardEl = document.createElement('div');
+        cardEl.className = 'card-item';
+        if (card.type === 'Legendary') cardEl.classList.add('legendary');
+        if (gameState.selectedCardId === card.uniqueId) cardEl.classList.add('selected');
+
+        cardEl.innerHTML = `
+          <div class="card-cost-badge">${card.cost} 🪙</div>
+          <div class="card-icon">${card.icon}</div>
+          <div class="card-name">${card.name}</div>
+          <div class="card-role-pill">${card.type}</div>
+        `;
+
+        cardEl.onclick = () => {
+          if (gameState.selectedCardId === card.uniqueId) {
+            gameState.selectedCardId = null;
+          } else {
+            gameState.selectedCardId = card.uniqueId;
+            renderInspectorCard(card);
+          }
+          renderCardDock();
+        };
+
+        container.appendChild(cardEl);
       });
-      existing.sort((a, b) => b.season - a.season || b.rep - a.rep);
-      localStorage.setItem('kota_selat_scores', JSON.stringify(existing.slice(0, 5)));
     }
 
+    function renderInspectorCard(card) {
+      const inspectorBody = document.getElementById('inspector-body');
+      const inspectorActions = document.getElementById('inspector-actions');
+      inspectorActions.innerHTML = '';
+
+      inspectorBody.innerHTML = `
+        <strong>${card.name}</strong><br>
+        <span style="font-size: 0.65rem; color: var(--gold-primary);">Draft Cost: ${card.cost} Gold • Zone: ${card.zone.toUpperCase()}</span><br>
+        <p style="margin-top: 4px;">${card.desc}</p>
+        <div class="inspector-badge-row" style="margin-top: 6px;">
+          <span class="badge-tag">Type: ${card.type}</span>
+          ${card.laborNeed > 0 ? `<span class="badge-tag badge-labor-needed">👷 Needs: ${card.laborNeed} Labor</span>` : ''}
+        </div>
+        <p style="font-size: 0.65rem; color: var(--text-muted); margin-top: 6px;">
+          Click any valid grid tile to build or drop on a duplicate building to stack up to ★3.
+        </p>
+      `;
+    }
+
+    /* Math Calculations (Labor, Def, Capacity, Threat) */
+    function calculateLabor() {
+      let population = 2; // Base coastal folk
+      let demand = 0;
+
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
+          const item = gameState.board[r][c];
+          if (!item) continue;
+          if (item.id === 'village') population += item.stars * 2;
+          if (item.laborNeed) demand += item.laborNeed * item.stars;
+        }
+      }
+      return { population, demand };
+    }
+
+    function calculateDefense() {
+      let rawDef = 0;
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
+          const item = gameState.board[r][c];
+          if (!item) continue;
+          if (item.id === 'tower') rawDef += item.stars * 3;
+          if (item.id === 'mercenary') rawDef += item.stars * 4;
+        }
+      }
+
+      if (gameState.legendaryDrafted === 'hang_tuah') {
+        rawDef += 5;
+      }
+
+      // Check labor shortage penalty
+      const labor = calculateLabor();
+      let totalDef = rawDef;
+      let understaffed = false;
+
+      if (labor.demand > labor.population) {
+        understaffed = true;
+        totalDef = Math.max(0, Math.floor(rawDef * 0.4)); // 60% penalty
+      }
+
+      return { totalDef, rawDef, understaffed };
+    }
+
+    function calculateWarehouseStorage() {
+      let cap = 0;
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
+          const item = gameState.board[r][c];
+          if (item?.id === 'warehouse') cap += item.stars * 3;
+        }
+      }
+      return cap;
+    }
+
+    function calculateThreat() {
+      const base = 2 + Math.floor(gameState.season * 0.9);
+      return gameState.hasSecondPort ? Math.floor(base * 1.4) : base;
+    }
+
+    /* Reputation & Tier Advancement */
+    function addReputation(amt) {
+      gameState.reputationStars += amt;
+      const nextTierThreshold = gameState.reputationTier * 6;
+
+      if (gameState.reputationStars >= nextTierThreshold) {
+        gameState.reputationTier++;
+        // Tier-up Boon: Restore +1 HP
+        if (gameState.cityHp < gameState.maxHp) {
+          gameState.cityHp++;
+          logChronicle(`⚜️ Port advanced to Tier ${gameState.reputationTier}! Sultan restored +1 City HP.`, 'success');
+        } else {
+          logChronicle(`⚜️ Port advanced to Tier ${gameState.reputationTier}!`, 'success');
+        }
+      }
+    }
+
+    /* HUD and Horizon Update */
+    function updateHUD() {
+      const labor = calculateLabor();
+      const def = calculateDefense();
+      const storage = calculateWarehouseStorage();
+      const threat = calculateThreat();
+
+      document.getElementById('stat-gold').innerText = gameState.gold;
+      document.getElementById('stat-rep').innerText = `T${gameState.reputationTier} (${gameState.reputationStars}★)`;
+      document.getElementById('stat-hp').innerText = `${gameState.cityHp}/${gameState.maxHp}`;
+      document.getElementById('stat-def').innerText = `${def.totalDef} DEF vs ${threat}`;
+      document.getElementById('stat-labor').innerText = `${labor.population} / ${labor.demand}`;
+      document.getElementById('stat-cargo').innerText = `${storage} Muatan`;
+      document.getElementById('dial-season-text').innerText = `Season ${gameState.season} / ${GAME_CONFIG.MAX_SEASONS}`;
+    }
+
+    function updateHorizon() {
+      const threat = calculateThreat();
+      const shipTitle = gameState.hasSecondPort ? 'Ming & Gujarati Royal Fleets' : 'Perahu Dagang Jawa';
+      const demand = gameState.hasSecondPort ? 6 : 3;
+
+      document.getElementById('horizon-ship-title').innerText = shipTitle;
+      document.getElementById('horizon-cargo-demand').innerText = `Cargo Demand: ${demand} Spices`;
+      document.getElementById('horizon-threat-badge').innerText = `Raiders (${threat} DEF)`;
+    }
+
+    /* Chronicle Logs */
+    function logChronicle(msg, type = '') {
+      const box = document.getElementById('chronicle-box');
+      const entry = document.createElement('div');
+      entry.className = `chronicle-entry ${type}`;
+      const now = new Date();
+      const timeStr = `[${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}]`;
+      entry.innerHTML = `<span class="ts">${timeStr}</span> ${msg}`;
+      box.insertBefore(entry, box.firstChild);
+    }
+
+    /* Navigation & Modals */
+    function showRoadmapModal() { document.getElementById('roadmap-modal').classList.add('active'); }
+    function showCodexModal() { document.getElementById('codex-modal').classList.add('active'); }
     function showLeaderboardModal() {
       const listEl = document.getElementById('leaderboard-list');
-      const records = JSON.parse(localStorage.getItem('kota_selat_scores') || '[]');
-      if (records.length === 0) {
-        listEl.innerHTML = '<div style="color: var(--text-dim); text-align: center;">No recorded tenures yet. Govern your first term to establish legacy!</div>';
+      const saved = JSON.parse(localStorage.getItem('kota_selat_hall_of_fame') || '[]');
+      if (saved.length === 0) {
+        listEl.innerHTML = '<p>No administrative records found. Complete a term to enter history.</p>';
       } else {
-        listEl.innerHTML = records.map((r, i) => `
-          <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
-            <span><b>#${i+1}</b> Season ${r.season} (${r.rep}★)</span>
-            <span style="color: var(--gold-bright);">${r.gold} Gold</span>
+        listEl.innerHTML = saved.map((rec, i) => `
+          <div style="padding: 6px; border-bottom: 1px solid var(--panel-border); font-size: 0.75rem;">
+            <strong>#${i + 1} ${rec.name}</strong>: ${rec.outcome} (Season ${rec.season}, ${rec.gold} Gold, Tier ${rec.tier})
           </div>
         `).join('');
       }
       document.getElementById('leaderboard-modal').classList.add('active');
     }
 
-    function closeLeaderboardModal() {
-      document.getElementById('leaderboard-modal').classList.remove('active');
+    function showActModal(title, desc) {
+      document.getElementById('act-modal-title').innerText = title;
+      document.getElementById('act-modal-desc').innerText = desc;
+      document.getElementById('act-modal').classList.add('active');
     }
 
-    function showCodexModal() {
-      document.getElementById('codex-modal').classList.add('active');
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
     }
 
-    function closeCodexModal() {
-      document.getElementById('codex-modal').classList.remove('active');
+    function togglePause() {
+      gameState.isPaused = !gameState.isPaused;
+      document.getElementById('btn-pause').innerText = gameState.isPaused ? '▶️ Resume' : '⏸️ Pause';
     }
 
-    function showToast(msg) {
-      const toast = document.getElementById('toast-banner');
-      toast.innerText = msg;
-      toast.classList.add('show');
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 2600);
+    /* Victory & Defeat Handlers */
+    function triggerVictory() {
+      clearInterval(gameState.timerInterval);
+      saveScore('Imperial Hegemony (Victory)');
+      document.getElementById('endgame-title').innerText = '🎉 IMPERIAL VICTORY!';
+      document.getElementById('endgame-title').style.color = '#fbbf24';
+      document.getElementById('endgame-body').innerHTML = `
+        The Imperial Ming Treasure Fleet has anchored upon Melaka!<br><br>
+        Under your sovereign administration, the port flourished across 24 seasons. 
+        Foreign merchants honor your name across the seas.<br><br>
+        <strong>Final Gold:</strong> ${gameState.gold} 🪙 | <strong>Reputation:</strong> Tier ${gameState.reputationTier} (${gameState.reputationStars}★)
+      `;
+      document.getElementById('endgame-modal').classList.add('active');
     }
 
-    function addLog(text) {
-      const logBox = document.getElementById('dispatch-log');
-      const item = document.createElement('div');
-      item.className = 'log-item';
-      const now = new Date();
-      const timeStr = `${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-      item.innerHTML = `<span class="time">${timeStr}</span> ${text}`;
-      logBox.prepend(item);
+    function triggerGameOver(reason) {
+      clearInterval(gameState.timerInterval);
+      saveScore('Port Sacked (Defeat)');
+      document.getElementById('endgame-title').innerText = '💀 KOTA SELAT HAS FALLEN';
+      document.getElementById('endgame-title').style.color = '#ef4444';
+      document.getElementById('endgame-body').innerHTML = `
+        ${reason}<br><br>
+        Your term ended at Season ${gameState.season}. Melaka's shoreline fell to the raiders.<br><br>
+        <strong>Final Gold:</strong> ${gameState.gold} 🪙 | <strong>Reputation:</strong> Tier ${gameState.reputationTier}
+      `;
+      document.getElementById('endgame-modal').classList.add('active');
     }
 
-    window.onload = () => {
-      // Landing page active on load
-    };
+    function saveScore(outcome) {
+      const records = JSON.parse(localStorage.getItem('kota_selat_hall_of_fame') || '[]');
+      records.push({
+        name: 'Syahbandar',
+        season: gameState.season,
+        gold: gameState.gold,
+        tier: gameState.reputationTier,
+        outcome: outcome,
+        date: new Date().toLocaleDateString()
+      });
+      records.sort((a, b) => b.season - a.season || b.gold - a.gold);
+      localStorage.setItem('kota_selat_hall_of_fame', JSON.stringify(records.slice(0, 5)));
+    }
+
+    function restartGame() {
+      document.getElementById('endgame-modal').classList.remove('active');
+      gameState.season = 1;
+      gameState.act = 1;
+      gameState.gold = 12;
+      gameState.reputationStars = 0;
+      gameState.reputationTier = 1;
+      gameState.cityHp = 3;
+      gameState.hasSecondPort = false;
+      gameState.legendaryDrafted = null;
+      gameState.floodedTiles = [];
+      initGame();
+    }
+
+    // Launch application
+    window.onload = initGame;
   </script>
 </body>
 </html>
