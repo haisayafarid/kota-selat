@@ -1167,6 +1167,36 @@
     </div>
   </div>
 
+  <!-- Dedicated Welcome Landing Modal -->
+  <div class="modal-overlay active" id="welcome-modal">
+    <div class="modal-card" style="text-align: center; max-width: 520px;">
+      <h2 style="font-size: 1.3rem; letter-spacing: 1.5px; border-bottom: 1px solid var(--panel-border); padding-bottom: 8px;">
+        ⚜ KOTA SELAT: SYAHBANDAR 1500 AD
+      </h2>
+      <div class="modal-body" style="text-align: left; margin: 12px 0;">
+        <p>
+          Prior to the Portuguese conquest of 1511, Melaka stands as the richest maritime entrepôt in the world. 
+          As <strong>Syahbandar</strong>, you hold sovereign responsibility over the harbor.
+        </p>
+        <div class="roadmap-list" style="margin-top: 10px;">
+          <div class="roadmap-item">
+            <h4>Your Administrative Mandate:</h4>
+            <p>• <strong>Manage the Tides:</strong> Build during the Day (☀️); welcome fleets & repel pirates at Night (🌙).</p>
+            <p>• <strong>Balance the Realm:</strong> Match workforce to defense towers & warehouse storage to incoming cargo.</p>
+            <p>• <strong>Survive 24 Seasons:</strong> Advance through 3 Historical Acts and welcome the Imperial Ming Treasure Fleet.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions" style="justify-content: center; gap: 10px;">
+        <button class="btn-modal" onclick="showRoadmapModal()">🗺️ Campaign Acts</button>
+        <button class="btn-modal" onclick="showLeaderboardModal()">🏆 Hall of Fame</button>
+        <button class="btn-modal btn-modal-primary" style="padding: 10px 24px; font-size: 0.9rem;" onclick="startGameFromWelcome()">
+          ⚔️ Mula Mentadbir (Start Term)
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     /* =====================================================================
        KOTA SELAT: 24-SEASON 3-ACT ENGINE
@@ -1216,7 +1246,7 @@
       { id: 'muzaffar_shah', name: 'Sultan Muzaffar Shah', icon: '⚜️', cost: 0, type: 'Legendary', zone: 'land', laborNeed: 0, desc: 'Instant +5 Reputation AND slashes the Istana Melaka cost to 20 Gold & 5 Pop.' }
     ];
 
-    /* Initialize Game */
+   /* Initialize Game */
     function initGame() {
       // Setup grid & anchor Balai Penghulu at [2, 2]
       for (let r = 0; r < 5; r++) {
@@ -1239,6 +1269,15 @@
       renderBoard();
       updateHUD();
       updateHorizon();
+
+      // Keep timer paused until player clicks "Start Term"
+      gameState.isPaused = true;
+      document.getElementById('welcome-modal').classList.add('active');
+    }
+
+    function startGameFromWelcome() {
+      document.getElementById('welcome-modal').classList.remove('active');
+      gameState.isPaused = false;
       startDayCycle();
       logChronicle('⚜ Welcome to Kota Selat. Term officially commenced.', 'success');
     }
